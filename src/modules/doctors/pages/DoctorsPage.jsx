@@ -1,9 +1,15 @@
 import { useState } from 'react';
+import CreateDoctorModal from '../components/CreateDoctorModal';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
 
 function DoctorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [isModalOpen, setIsModalOpen] = useState({
+    createModal: false,
+    availabilityModal: false,
+  });
 
   const doctorsList = [
     {
@@ -46,6 +52,13 @@ function DoctorsPage() {
       doc.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleOpenModal = () => {
+    setIsModalOpen({ createModal: true, availabilityModal: false });
+  };
+  const handleCloseModal = () => {
+    setIsModalOpen({ createModal: false, availabilityModal: false });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,12 +121,16 @@ function DoctorsPage() {
           </Button>
 
           <Button
-            onClick={() => alert('Abrir modal de nuevo doctor')}
+            onClick={handleOpenModal}
             className="flex items-center gap-1.5 bg-med-primary-700 hover:bg-med-primary-800 text-white"
           >
             <span>+</span>
             <span>Nuevo Doctor</span>
           </Button>
+
+          {isModalOpen.createModal && !isModalOpen.availabilityModal && (
+            <CreateDoctorModal onClose={handleCloseModal} />
+          )}
         </div>
       </div>
 
