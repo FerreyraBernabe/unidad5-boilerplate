@@ -2,6 +2,7 @@ import { useState } from 'react';
 import CreateDoctorModal from '../components/CreateDoctorModal';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import AddAvailabilityModal from '../../availabilities/components/AddAvailabilityModal';
 
 function DoctorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -107,7 +108,7 @@ function DoctorsPage() {
           </div>
 
           <Button
-            onClick={() => alert('Abrir modal de disponibilidad horaria')}
+            onClick={handleOpenAvailabilityModal}
             className="flex items-center gap-2 bg-med-primary-900 hover:bg-med-primary-800 text-white"
           >
             <svg
@@ -125,6 +126,9 @@ function DoctorsPage() {
             </svg>
             <span>Agregar Disponibilidad Horaria</span>
           </Button>
+          {isAvailabilityModalOpen && !isCreateModalOpen && (
+            <AddAvailabilityModal onClose={handleCloseAvailabilityModal} />
+          )}
 
           <Button
             onClick={handleOpenCreateModal}
