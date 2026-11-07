@@ -7,7 +7,7 @@ export default function AvailabilityTable({
   const [schedules, setSchedules] = useState(initialData);
   const handleToggle = (id) => {
     setSchedules((prev) => {
-      prev.map((item) =>
+      return prev.map((item) =>
         item.id === id ? { ...item, activo: !item.activo } : item
       );
     });
@@ -38,17 +38,17 @@ export default function AvailabilityTable({
               <tr key={row.id} className={!row.activo ? 'row-disabled' : ''}>
                 <td className="day-name">{row.nombre}</td>
                 <td>
-                  <label className="inline-flex items-center cursor-pointer">
+                  <label className="inline-flex cursor-pointer items-center gap-3">
                     <input
-                      className="sr-only peer"
-                      value=""
                       type="checkbox"
+                      className="peer sr-only"
                       checked={row.activo}
                       onChange={() => handleToggle(row.id)}
                     />
-                    <div className="bg-cyan-800 rounded-3xl">
-                      <div className="relative w-9 h-5 bg-neutral-quaternary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-soft dark:peer-focus:ring-brand-soft rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
-                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="relative h-5 w-9 rounded-full bg-slate-300 transition-colors after:absolute after:start-0.5 after:top-0.5 after:size-4 after:rounded-full after:bg-white after:transition-transform after:content-[''] peer-checked:bg-med-primary-700 peer-checked:after:translate-x-4 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-med-primary-700"
+                    />
                     <span className="select-none ms-3 text-sm font-medium text-heading text-cyan-900">
                       {row.activo ? 'Activo' : 'Inactivo'}
                     </span>

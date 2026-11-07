@@ -49,20 +49,33 @@ export default function AddAvailabilityModal({ onClose }) {
               <ExtraInfoCard />
             </Card>
           </div>
-          <div>
-            <div className="flex flex-row content-evenly justify-between">
+          <section className="bg-white border border-gray-400 rounded-sm mt-2 mb-10 mr-4">
+            <div className="flex flex-row items-center justify-between p-4">
               <span className>Configuración de Horarios</span>
-              <span className="bg-emerald-300 rounded-2xl w-fit h-fit p-1 text-emerald-600 font-bold">
+              <span className=" text-xs bg-emerald-100 rounded-2xl w-fit h-fit p-1 text-emerald-500 font-bold">
                 • Horario Regular
               </span>
-              <span>Intervalos de 30 minutos</span>
+              <span className="text-xs text-gray-500">
+                Intervalos de 30 minutos
+              </span>
             </div>
             <AvailabilityTable
               initialData={days}
               onSave={() => console.log('guardado')}
               onCancel={() => console.log('cancelado')}
             />
-          </div>
+            <section className="flex flex-row gap-1.5 justify-end p-6 boder-t border-t-gray-400">
+              <button
+                onClick={onClose}
+                className="border border-blue-950 rounded-sm bg-white pb-2 pt-2 pr-4 pl-4"
+              >
+                Cancelar
+              </button>
+              <button className="border border-blue-950 rounded-sm bg-sky-950 text-white pb-2 pt-2 pr-4 pl-4">
+                Guardar Disponibilidad
+              </button>
+            </section>
+          </section>
         </div>
       </section>
     </div>

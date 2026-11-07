@@ -7,7 +7,11 @@ export default function ExtraInfoCard() {
       >
         i
       </span>
-      <p className="leading-6">Hola soy una card con info extra.</p>
+      <p className="leading-6">
+        Los cambios realizados se aplicarán a partir de la próxima semana
+        calendario. Las citas ya programadas no se verán afectadas
+        automáticamente.
+      </p>
     </div>
   );
 }
