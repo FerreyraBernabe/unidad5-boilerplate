@@ -6,10 +6,9 @@ import Button from '../../shared/components/Button';
 function DoctorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [isModalOpen, setIsModalOpen] = useState({
-    createModal: false,
-    availabilityModal: false,
-  });
+  //TODO: Refactorizar para unificar en un solo estado de modal
+  const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const doctorsList = [
     {
@@ -53,11 +52,18 @@ function DoctorsPage() {
       doc.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleOpenModal = () => {
-    setIsModalOpen({ createModal: true, availabilityModal: false });
+  //TODO: Refactorizar
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true);
   };
-  const handleCloseModal = () => {
-    setIsModalOpen({ createModal: false, availabilityModal: false });
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
+  };
+  const handleOpenAvailabilityModal = () => {
+    setIsAvailabilityModalOpen(true);
+  };
+  const handleCloseAvailabilityModal = () => {
+    setIsAvailabilityModalOpen(false);
   };
 
   return (
@@ -121,15 +127,15 @@ function DoctorsPage() {
           </Button>
 
           <Button
-            onClick={handleOpenModal}
+            onClick={handleOpenCreateModal}
             className="flex items-center gap-1.5 bg-med-primary-700 hover:bg-med-primary-800 text-white"
           >
             <span>+</span>
             <span>Nuevo Doctor</span>
           </Button>
 
-          {isModalOpen.createModal && !isModalOpen.availabilityModal && (
-            <CreateDoctorModal onClose={handleCloseModal} />
+          {isCreateModalOpen && !isAvailabilityModalOpen && (
+            <CreateDoctorModal onClose={handleCloseCreateModal} />
           )}
         </div>
       </div>
