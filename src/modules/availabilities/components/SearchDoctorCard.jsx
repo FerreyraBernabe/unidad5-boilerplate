@@ -7,6 +7,7 @@ export default function SearchDoctorCard() {
     <>
       <form action="submit">
         <label htmlFor="doctor-name">Seleccionar profesional</label>
+        {/* TODO: Esto debería ser un SELECT, no un INPUT*/}
         <input type="text" name="doctor-name" />
       </form>
       <section className="doctor-info">

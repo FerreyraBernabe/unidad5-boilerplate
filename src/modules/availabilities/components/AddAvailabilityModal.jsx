@@ -3,6 +3,7 @@ import AvailabilityTable from './AvailabilityTable';
 import SearchDoctorCard from './SearchDoctorCard';
 import ExtraInfoCard from './ExtraInfoCard';
 import { useEffect } from 'react';
+import { days } from '../constants/days.js';
 export default function AddAvailabilityModal({ onClose }) {
   useEffect(() => {
     console.log('Renderizando modal...');
@@ -46,7 +47,11 @@ export default function AddAvailabilityModal({ onClose }) {
           <Card className="extra-info-card">
             <ExtraInfoCard />
           </Card>
-          <AvailabilityTable />
+          <AvailabilityTable
+            initialData={days}
+            onSave={() => console.log('guardado')}
+            onCancel={() => console.log('cancelado')}
+          />
         </div>
       </section>
     </div>

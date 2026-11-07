@@ -1,4 +1,23 @@
-export default function AvailabilityTable() {
+import { useState } from 'react';
+export default function AvailabilityTable({
+  initialData = days,
+  onSave,
+  onCancel,
+}) {
+  const [schedules, setSchedules] = useState(initialData);
+  const handleToggle = (id) => {
+    setSchedules((prev) => {
+      prev.map((item) =>
+        item.id === id ? { ...item, activo: !item.activo } : item
+      );
+    });
+  };
+
+  const handleTimeChange = (id, field, value) => {
+    setSchedules((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+    );
+  };
   return (
     <form
       id="availabilityForm"
@@ -14,7 +33,48 @@ export default function AvailabilityTable() {
               <th className="px-5 py-3.5 font-semibold">Salida</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-med-border-subtle"></tbody>
+          <tbody className="divide-y divide-med-border-subtle">
+            {schedules.map((row) => (
+              <tr key={row.id} className={!row.activo ? 'row-disabled' : ''}>
+                <td className="day-name">{row.nombre}</td>
+                <td>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={row.activo}
+                      onChange={() => handleToggle(row.id)}
+                    />
+                    <span className="slider round"></span>
+                    <span className="toggle-label">
+                      {row.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </label>
+                </td>
+                <td>
+                  <input
+                    type="time"
+                    className="time-input"
+                    value={row.activo ? row.entrada : ''}
+                    disabled={!row.activo}
+                    onChange={(e) =>
+                      handleTimeChange(row.id, 'entrada', e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <input
+                    type="time"
+                    className="time-input"
+                    value={row.activo ? row.salida : ''}
+                    disabled={!row.activo}
+                    onChange={(e) =>
+                      handleTimeChange(row.id, 'salida', e.target.value)
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </form>
