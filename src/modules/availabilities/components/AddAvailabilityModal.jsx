@@ -15,7 +15,7 @@ export default function AddAvailabilityModal({ onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="availability-modal-title"
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-med-bg shadow-xl"
+        className="flex max-h-[250vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-med-bg shadow-xl"
       >
         <header className="flex items-start justify-between gap-4 border-b border-med-border-subtle bg-white px-5 py-5 sm:px-7">
           <div>
@@ -40,18 +40,29 @@ export default function AddAvailabilityModal({ onClose }) {
           </button>
         </header>
 
-        <div className="flex flex-col gap-4 overflow-y-auto p-5 sm:gap-5 sm:p-7">
-          <Card className="search-card">
-            <SearchDoctorCard />
-          </Card>
-          <Card className="extra-info-card">
-            <ExtraInfoCard />
-          </Card>
-          <AvailabilityTable
-            initialData={days}
-            onSave={() => console.log('guardado')}
-            onCancel={() => console.log('cancelado')}
-          />
+        <div className="flex flex-row gap-4">
+          <div className="flex flex-col gap-6 p-4">
+            <Card className="search-card">
+              <SearchDoctorCard />
+            </Card>
+            <Card className="extra-info-card">
+              <ExtraInfoCard />
+            </Card>
+          </div>
+          <div>
+            <div className="flex flex-row content-evenly justify-between">
+              <span className>Configuración de Horarios</span>
+              <span className="bg-emerald-300 rounded-2xl w-fit h-fit p-1 text-emerald-600 font-bold">
+                • Horario Regular
+              </span>
+              <span>Intervalos de 30 minutos</span>
+            </div>
+            <AvailabilityTable
+              initialData={days}
+              onSave={() => console.log('guardado')}
+              onCancel={() => console.log('cancelado')}
+            />
+          </div>
         </div>
       </section>
     </div>
