@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import AddSpecialityModal from '../components/AddSpecialityModal';
 
 function SpecialtiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] =
+    useState(false);
 
+  const handleOpenNewSpecialityModal = () => setIsNewSpecialityModalOpen(true);
+  const handleCloseNewSpecialityModal = () =>
+    setIsNewSpecialityModalOpen(false);
   const specialtiesList = [
     {
       id: 1,
@@ -144,13 +150,16 @@ function SpecialtiesPage() {
 
           {/* Botón Nueva Especialidad */}
           <Button
-            onClick={() => alert('Abrir modal para crear nueva especialidad')}
+            onClick={handleOpenNewSpecialityModal}
             className="flex items-center gap-1.5 bg-med-primary-900 hover:bg-med-primary-800 text-white font-medium"
           >
             <span>+</span>
             <span>Nueva Especialidad</span>
           </Button>
         </div>
+        {isNewSpecialityModalOpen && (
+          <AddSpecialityModal onCancel={handleCloseNewSpecialityModal} />
+        )}
       </div>
 
       {/* Tabla Principal de Especialidades */}

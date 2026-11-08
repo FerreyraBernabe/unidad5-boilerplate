@@ -49,6 +49,7 @@ export default function AddAvailabilityModal({ onClose }) {
               <ExtraInfoCard />
             </Card>
           </div>
+          {/*TODO: Ver la forma de hacer la modal más grande sin usar margin. */}
           <section className="bg-white border border-gray-400 rounded-sm mt-2 mb-10 mr-4">
             <div className="flex flex-row items-center justify-between p-4">
               <span className>Configuración de Horarios</span>
