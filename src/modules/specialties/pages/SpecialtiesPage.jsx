@@ -157,7 +157,9 @@ function SpecialtiesPage() {
             <span>Nueva Especialidad</span>
           </Button>
         </div>
-        {isNewSpecialityModalOpen && <AddSpecialityModal />}
+        {isNewSpecialityModalOpen && (
+          <AddSpecialityModal onCancel={handleCloseNewSpecialityModal} />
+        )}
       </div>
 
       {/* Tabla Principal de Especialidades */}

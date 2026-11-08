@@ -1,4 +1,4 @@
-export default function AddSpecialityModal() {
+export default function AddSpecialityModal({ onCancel }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
       <section
@@ -44,7 +44,10 @@ export default function AddSpecialityModal() {
         </section>
         {/*TODO: Refactorizar. Son los mismos botones de @AddAvailabilityModal */}
         <section className="flex flex-row gap-1.5 justify-end p-6 boder-t border-t-gray-400 bg-white">
-          <button className="border border-blue-950 rounded-sm bg-white pb-2 pt-2 pr-4 pl-4">
+          <button
+            onClick={onCancel}
+            className="border border-blue-950 rounded-sm bg-white pb-2 pt-2 pr-4 pl-4"
+          >
             Cancelar
           </button>
           <button className="border border-blue-950 rounded-sm bg-sky-950 text-white pb-2 pt-2 pr-4 pl-4">
