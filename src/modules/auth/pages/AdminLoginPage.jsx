@@ -15,11 +15,11 @@ function AdminLoginPage() {
   } = useForm({ defaultValues: { username: '', password: '' } });
 
   const navigate = useNavigate();
-  const { singinAdmin } = useAuth();
+  const { singin } = useAuth();
 
   const onValid = async (formData) => {
     try {
-      const { error } = await singinAdmin(formData.username, formData.password);
+      const { error } = await singin(formData.username, formData.password);
 
       if (error) {
         setErrorMessage(
