@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Cardiología",
+    "description": "Estudio y tratamiento de trastornos del corazón y del sistema circulatorio.",
+    "status": "Active",
+    "icon": "heart"
+  },
+  {
+    "id": 2,
+    "name": "Neurología",
+    "description": "Diagnóstico y tratamiento de todas las categorías de afecciones cerebrales.",
+    "status": "Active",
+    "icon": "brain"
+  },
+  {
+    "id": 3,
+    "name": "Dermatología",
+    "description": "Atención integral de enfermedades de la piel, uñas y cabello.",
+    "status": "Inactive",
+    "icon": "skin"
+  },
+  {
+    "id": 4,
+    "name": "Pediatría",
+    "description": "Cuidado médico de lactantes, niños y adolescentes.",
+    "status": "Active",
+    "icon": "kid"
+  },
+  {
+    "id": 5,
+    "name": "Reumatología",
+    "description": "Diagnóstico y tratamiento de enfermedades inflamatorias, autoinmunes, degenerativas o genéticas que afectan los huesos y órganos.",
+    "status": "Inactive",
+    "icon": "muscle"
+  }
+]
