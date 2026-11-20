@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const instance = axios.create({
   baseURL: import.meta.env.DEV ? '/' : import.meta.env.VITE_BACKEND_URL,
-  withCredentials: true,
+  withCredentials: false,
 });
 
 instance.interceptors.request.use(
@@ -22,13 +22,19 @@ instance.interceptors.response.use(
   (config) => {
     return config;
   },
-  (error) => {
-    if (error.status === 401) {
-      if (window.location.pathname.includes('/admin/')) {
-        localStorage.clear();
-        window.location.href = '/login';
-      } else {
-        localStorage.removeItem('token');
+    (error) => {
+    if (error.response?.status === 401) {
+      const path = window.location.pathname;
+      const isLoginPage = path === '/login' || path === '/admin/login';
+
+      if (!isLoginPage) {
+        if (path.startsWith('/admin')) {
+          localStorage.clear();
+          window.location.href = '/admin/login';
+        } else {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
       }
     }
 
