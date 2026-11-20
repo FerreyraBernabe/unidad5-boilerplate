@@ -44,6 +44,7 @@ export function parseApiError(
   const status = error.response?.status ?? null;
   const payload = error.response?.data;
 
+  // Este seria el caso cuando directamente no se posee ningun valor del argumento para armar la respesta -Mariano
   if (!error.response) {
     return {
       status: null,
@@ -54,7 +55,7 @@ export function parseApiError(
   }
 
   const rawCode = payload?.errorCode || null;
-  // const normalizedCode = rawCode ? String(rawCode).toUpperCase() : null;
+  // const normalizedCode = rawCode ? String(rawCode).toUpperCase() : null; -Normaliza la respuesta para compararla con el diccionario
   const details = Array.isArray(payload?.details) ? payload.details : [];
 
   const message = payload?.message || payload?.detail || fallbackMessage;
