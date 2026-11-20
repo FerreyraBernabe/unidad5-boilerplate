@@ -2,43 +2,10 @@ import { useEffect, useState } from 'react';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
 import AddSpecialityModal from '../components/AddSpecialityModal';
-import { getSpecialities } from '../services/getSpecialities';
-
+import { useSpecialties } from '../hooks/useSpecialties';
 function SpecialtiesPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] =
-    useState(false);
-  const [specialties, setSpecialties] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await getSpecialities();
-        setSpecialties(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (isMounted) {
-          console.log('ups hubo un error');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-
-    return () => {
-      setSpecialties([]);
-      isMounted = false;
-    };
-  }, []);
-  {
-    /*TODO: verificar la dependencia con "searchTerm"
-    y mover a un Hook */
-  }
+  const {specialties,searchTerm,setSearchTerm,loading,error,refetch} = useSpecialties();
+  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] = useState(false);
 
   const handleOpenNewSpecialityModal = () => setIsNewSpecialityModalOpen(true);
   const handleCloseNewSpecialityModal = () =>
@@ -104,7 +71,13 @@ function SpecialtiesPage() {
           </Button>
         </div>
         {isNewSpecialityModalOpen && (
-          <AddSpecialityModal onCancel={handleCloseNewSpecialityModal} />
+          <AddSpecialityModal
+            onCancel={handleCloseNewSpecialityModal}
+            onSuccess={() => {
+              handleCloseNewSpecialityModal();
+              refetch();
+            }}
+          />
         )}
       </div>
 
