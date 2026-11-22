@@ -1,17 +1,13 @@
-import { useDoctors } from '../hooks/useDoctors';
+import { useDoctors } from '../../doctors/hooks/useDoctors';
 import { useSpecialties } from '../../specialties/hooks/useSpecialties';
+import { useAppointments } from '../../appointments/hooks/useAppointments';
 
-const {
-    doctors,
-    create,
-    total,
-    loading,
-    error,
-    searchTerm,
-    setSearchTerm,
-    pageIndex,
-    pageSize,
-    totalPages,
-    goToPage,
-} = useDoctors({ initialPageSize: 10 });
+export default function useMetrics() {
+  const { total: totalDoctors } = useDoctors({ initialPageSize: 100 });
+  const { total: totalSpecialities } = useSpecialties({ initialPageSize: 100 });
+  const { total: totalAppointments } = useAppointments({
+    initialPageSize: 100,
+  });
 
+  return { totalDoctors, totalSpecialities, totalAppointments };
+}
