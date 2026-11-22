@@ -12,12 +12,28 @@ function SpecialtiesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
-      getSpecialities().then((data) => {
-        setSpecialties(data);
-        setLoading(false);
-      });
-    }, 2000);
+    let isMounted = true;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await getSpecialities();
+        setSpecialties(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (isMounted) {
+          console.log('ups hubo un error');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+    fetchData();
+
+    return () => {
+      setSpecialties([]);
+      isMounted = false;
+    };
   }, []);
   {
     /*TODO: verificar la dependencia con "searchTerm"
