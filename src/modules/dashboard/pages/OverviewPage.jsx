@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
+import { useDoctors } from '../../doctors/hooks/useDoctors';
+import { useSpecialties } from '../../specialties/hooks/useSpecialties';
+import useMetrics from '../hooks/useMetrics';
 
 function OverviewPage() {
   const navigate = useNavigate();
-
+  const { totalDoctors, totalSpecialities, totalAppointments } = useMetrics();
   const previewDoctors = [
     {
       id: 1,
@@ -31,6 +34,8 @@ function OverviewPage() {
       avatar: '👨‍⚕️',
     },
   ];
+
+  const { doctors, total, pageSize } = useDoctors({ initialPageSize: 4 });
 
   return (
     <div className="flex flex-col gap-8">
@@ -95,7 +100,7 @@ function OverviewPage() {
               Doctores Activos
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              124
+              {totalDoctors}
             </p>
           </div>
         </Card>
@@ -128,7 +133,7 @@ function OverviewPage() {
               Especialidades Activas
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              32
+              {totalSpecialities}
             </p>
           </div>
         </Card>
@@ -161,7 +166,7 @@ function OverviewPage() {
               Turnos Confirmados Para Hoy
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              48
+              {totalAppointments}
             </p>
           </div>
         </Card>
@@ -210,7 +215,7 @@ function OverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-med-border-subtle text-sm">
-              {previewDoctors.map((doc) => (
+              {doctors.map((doc) => (
                 <tr
                   key={doc.id}
                   className="hover:bg-gray-50/70 transition-colors"
@@ -224,18 +229,18 @@ function OverviewPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-med-text-sub">
-                    {doc.specialty}
+                    {doc.specialty.name}
                   </td>
                   <td className="px-6 py-4">
-                    {doc.statusType === 'active' ? (
+                    {doc.availabilityStatus === 'Available' ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
                         <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
-                        {doc.status}
+                        Turnos Disponibles
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-leave-bg text-med-leave-text">
                         <span className="w-1.5 h-1.5 rounded-full bg-med-leave-text" />
-                        {doc.status}
+                        Sin turnos
                       </span>
                     )}
                   </td>
@@ -255,7 +260,9 @@ function OverviewPage() {
 
         {/* Paginador inferior normalizado */}
         <div className="p-4 bg-med-primary-50/50 border-t border-med-border flex items-center justify-between text-xs text-med-text-muted">
-          <span>Mostrando 3 de 124 registros</span>
+          <span>
+            Mostrando {pageSize} de {total} registros
+          </span>
           <div className="flex items-center gap-1">
             <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
               ‹

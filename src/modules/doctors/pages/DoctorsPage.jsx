@@ -161,7 +161,7 @@ function DoctorsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-med-primary-100 text-med-primary-700 text-xs font-bold flex items-center justify-center shrink-0">
-                            {doc.name?.slice(0, 2).toUpperCase()}
+                            {""}
                           </div>
                           <div>
                             <p className="font-semibold text-med-primary-900 leading-tight">
