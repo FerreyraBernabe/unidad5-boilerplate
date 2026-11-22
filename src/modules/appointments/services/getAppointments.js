@@ -1,6 +1,8 @@
 import { instance } from '../../shared/api/axiosInstance.js';
 import { ENDPOINTS } from '../../shared/api/endpoints.js';
 
+// GET api/appointments/search?specialtyId&doctorId&dni&date&pageIndex&pageSize
+// Solo se envían los filtros que tienen valor. pageIndex empieza en 1.
 export async function getAppointments({
   dni = '',
   specialtyId = '',
@@ -11,10 +13,21 @@ export async function getAppointments({
 } = {}) {
   const params = { pageIndex, pageSize };
 
-  if (dni && dni.trim() !== '') params.dni = dni.trim();
-  if (specialtyId && specialtyId !== 'Todas') params.specialtyId = specialtyId;
-  if (doctorId && doctorId !== 'Todos') params.doctorId = doctorId;
-  if (date) params.date = date;
+  if (dni.trim()) {
+    params.dni = dni.trim();
+  }
+
+  if (specialtyId) {
+    params.specialtyId = specialtyId;
+  }
+
+  if (doctorId) {
+    params.doctorId = doctorId;
+  }
+
+  if (date) {
+    params.date = date;
+  }
 
   const response = await instance.get(ENDPOINTS.APPOINTMENTS_SEARCH, {
     params,
