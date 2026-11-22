@@ -1,48 +1,48 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import Button from '../../shared/components/Button';
-import useAuth from '../../auth/hook/useAuth';
-import { frontendErrorMessage } from '../../auth/helpers/backendError';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { parseApiError } from '../../shared/api/apiError';
 
 function PatientLoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm({ defaultValues: { username: '', password: '' } });
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: { email: '', dni: '' },
+    mode: 'onBlur',
+  });
 
   const navigate = useNavigate();
-  const { singinPatient } = useAuth();
+  const { isAuthenticated, role, signInPatient } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to={role === "ADMINISTRADOR" ? '/admin/home' : '/'} replace />;
+  }
 
   const onValid = async (formData) => {
+    setErrorMessage('');
+
     try {
-      const { error } = await singinPatient(
-        formData.username,
-        formData.password
-      );
+      await signInPatient({
+        email: formData.email,
+        dni: formData.dni,
+      });
 
-      if (error) {
-        setErrorMessage(error.frontendErrorMessage || 'Credenciales inválidas');
-
-        return;
-      }
-
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
-      if (error?.response?.data?.code) {
-        setErrorMessage(frontendErrorMessage[error?.response?.data?.code]);
-      } else {
-        setErrorMessage('Error al conectar con el servicio de pacientes');
-      }
+      setErrorMessage(
+        parseApiError(error, 'Error al conectar con el servicio de pacientes')
+          .message
+      );
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-med-primary-950 px-4 py-8 sm:p-6">
-      {/* Brand Header idéntico a admin-login */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-3">
           <svg
@@ -51,6 +51,7 @@ function PatientLoginPage() {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth="2"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -64,7 +65,6 @@ function PatientLoginPage() {
         </h1>
       </div>
 
-      {/* Main Card */}
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-white/10 p-6 sm:p-10">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-med-primary-900">
@@ -75,10 +75,16 @@ function PatientLoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
-          {/* Correo Electrónico */}
+        <form
+          onSubmit={handleSubmit(onValid)}
+          className="flex flex-col gap-4"
+          noValidate
+        >
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-med-text-main">
+            <label
+              htmlFor="patient-email"
+              className="text-xs font-semibold text-med-text-main"
+            >
               Correo Electrónico
             </label>
             <div className="relative">
@@ -88,6 +94,7 @@ function PatientLoginPage() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -98,29 +105,36 @@ function PatientLoginPage() {
                 </svg>
               </span>
               <input
+                id="patient-email"
                 type="email"
+                autoComplete="email"
                 placeholder="paciente@medportal.com"
-                className={`w-full border rounded-lg pl-10 pr-3.5 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${
-                  errors.username
-                    ? 'border-red-400 bg-red-50/20'
-                    : 'border-med-border'
-                }`}
-                {...register('username', {
+                className={`w-full border rounded-lg pl-10 pr-3.5 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${errors.email
+                  ? 'border-red-400 bg-red-50/20'
+                  : 'border-med-border'
+                  }`}
+                {...register('email', {
                   required: 'El correo electrónico es obligatorio',
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Ingrese un correo electrónico válido.',
+                  },
                 })}
               />
             </div>
-            {errors.username && (
+            {errors.email && (
               <p className="text-xs text-red-500 font-medium">
-                {errors.username.message}
+                {errors.email.message}
               </p>
             )}
           </div>
 
-          {/* Contraseña con botón mostrar/ocultar */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-med-text-main">
-              Contraseña
+            <label
+              htmlFor="patient-dni"
+              className="text-xs font-semibold text-med-text-main"
+            >
+              DNI (sin puntos)
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-med-text-muted">
@@ -129,6 +143,7 @@ function PatientLoginPage() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -139,82 +154,39 @@ function PatientLoginPage() {
                 </svg>
               </span>
               <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                className={`w-full border rounded-lg pl-10 pr-10 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${
-                  errors.password
-                    ? 'border-red-400 bg-red-50/20'
-                    : 'border-med-border'
-                }`}
-                {...register('password', {
-                  required: 'La contraseña es obligatoria',
+                id="patient-dni"
+                type="text"
+                inputMode="numeric"
+                maxLength={8}
+                placeholder="Ej. 38123456"
+                className={`w-full border rounded-lg pl-10 pr-3.5 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${errors.dni
+                  ? 'border-red-400 bg-red-50/20'
+                  : 'border-med-border'
+                  }`}
+                {...register('dni', {
+                  required: 'El DNI es obligatorio',
+                  pattern: {
+                    value: /^\d{7,8}$/,
+                    message: 'El DNI debe tener 7 u 8 dígitos numéricos.',
+                  },
                 })}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={
-                  showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                }
-                title={
-                  showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                }
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-med-text-muted hover:text-med-text-main"
-              >
-                {showPassword ? (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                )}
-              </button>
             </div>
-            {errors.password && (
+            {errors.dni && (
               <p className="text-xs text-red-500 font-medium">
-                {errors.password.message}
+                {errors.dni.message}
               </p>
             )}
           </div>
 
-          <Button type="submit" className="w-full mt-1">
-            Ingresar Paciente
+          <Button type="submit" disabled={isSubmitting} className="w-full mt-1">
+            {isSubmitting ? 'Ingresando...' : 'Ingresar Paciente'}
           </Button>
 
-          <div className="bg-med-primary-50 border border-med-primary-200/60 rounded-lg p-2.5 text-center text-xs text-med-primary-900">
-            <span className="font-semibold">Credenciales de prueba:</span>
-            <br />
-            Email: <code>paciente@medportal.com</code> | Clave:{' '}
-            <code>paciente123</code>
-          </div>
+          <p className="text-center text-[11px] text-med-text-muted">
+            Si es tu primer ingreso, tu cuenta de paciente se registrará
+            automáticamente.
+          </p>
 
           {errorMessage && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 text-center">
@@ -224,7 +196,6 @@ function PatientLoginPage() {
         </form>
       </div>
 
-      {/* Switch to Admin Portal */}
       <div className="mt-6 text-center">
         <Link
           to="/admin/login"

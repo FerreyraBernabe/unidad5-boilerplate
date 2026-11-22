@@ -1,94 +1,69 @@
-import { createContext, useState } from 'react';
-import { login } from '../services/login';
-import { loginAdmin } from '../services/adminLogin';
-import { loginPatient } from '../services/patientLogin';
+import { createContext, useCallback, useState } from 'react';
+import { loginAdmin, loginPatient } from '../services/authService';
 
-const AuthContext = createContext();
+const AUTH_STORAGE_KEY = 'sesion';
+
+const AuthContext = createContext(null);
 
 function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const token = localStorage.getItem('token');
+  const [session, setSession] = useState(readInitialSession);
 
-    return Boolean(token);
-  });
+  const saveSession = useCallback((nextSession) => {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextSession));
+    localStorage.setItem('token', nextSession.token);
+    setSession(nextSession);
+  }, []);
 
-  const singout = () => {
-    localStorage.clear();
-    setIsAuthenticated(false);
-  };
+  const signOut = useCallback(() => {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem('token');
+    setSession(null);
+  }, []);
 
-  const setAuthSession = (token) => {
-    localStorage.setItem('token', token);
-    setIsAuthenticated(true);
-  };
+  const signInAdmin = useCallback(
+    async ({ email, password }) => {
+      const sessionData = await loginAdmin({ email, password });
 
-  const singin = async (username, password) => {
-    const { data, error } = await login(username, password);
+      saveSession(sessionData);
 
-    if (error) {
-      return { error };
-    }
+      return sessionData;
+    },
+    [saveSession]
+  );
 
-    setAuthSession(data);
+  const signInPatient = useCallback(
+    async ({ email, dni }) => {
+      const sessionData = await loginPatient({ email, dni });
 
-    return { error: null };
-  };
+      saveSession(sessionData);
 
-  const singinAdmin = async (username, password) => {
-    if (
-      (username === 'admin' ||
-        username === 'admin@medportal.com' ||
-        username === 'admin@test.com') &&
-      password === 'admin123'
-    ) {
-      setAuthSession('mock-admin-token-12345');
+      return sessionData;
+    },
+    [saveSession]
+  );
 
-      return { error: null };
-    }
+  const isAuthenticated = Boolean(session?.token);
+  const role = session?.role ?? null;
+  let user = null;
 
-    const { data, error } = await loginAdmin(username, password);
-
-    if (error) {
-      return { error };
-    }
-
-    setAuthSession(data);
-
-    return { error: null };
-  };
-
-  const singinPatient = async (username, password) => {
-    if (
-      (username === 'paciente' ||
-        username === 'paciente@medportal.com' ||
-        username === 'paciente@test.com') &&
-      password === 'paciente123'
-    ) {
-      setAuthSession('mock-patient-token-67890');
-
-      return { error: null };
-    }
-
-    const { data, error } = await loginPatient(username, password);
-
-    if (error) {
-      return { error };
-    }
-
-    setAuthSession(data);
-
-    return { error: null };
-  };
+  if (session) {
+    user = {
+      email: session.email,
+      dni: session.dni,
+      role: session.role,
+    };
+  }
 
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
-        singin,
-        singinAdmin,
-        singinPatient,
-        singout,
-        setAuthSession,
+        token: session?.token ?? null,
+        role,
+        user,
+        signInAdmin,
+        signInPatient,
+        signOut,
       }}
     >
       {children}
@@ -96,4 +71,26 @@ function AuthProvider({ children }) {
   );
 }
 
+function readInitialSession() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+
+    if (raw) {
+      const parsed = JSON.parse(raw);
+
+      if (parsed?.token) {
+        return {
+          token: parsed.token,
+          role: parsed.role || null,
+          email: parsed.email || null,
+          dni: parsed.dni || null,
+        };
+      }
+    }
+  } catch {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
+
+  return null;
+}
 export { AuthProvider, AuthContext };
