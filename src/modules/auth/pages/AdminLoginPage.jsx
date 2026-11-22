@@ -1,55 +1,58 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../hook/useAuth';
-import { frontendErrorMessage } from '../helpers/backendError';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import Button from '../../shared/components/Button';
+import { parseApiError } from '../../shared/api/apiError';
+import { useAuth } from '../hooks/useAuth';
+
 
 function AdminLoginPage() {
-  const [errorMessage, setErrorMessage] = useState('');
+  const [apiError, setApiError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  const navigate = useNavigate();
+  const { isAuthenticated, role, signInAdmin } = useAuth();
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm({ defaultValues: { username: '', password: '' } });
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: { email: '', password: '' },
+    mode: 'onBlur',
+  });
 
-  const navigate = useNavigate();
-  const { singin } = useAuth();
+  if (isAuthenticated) {
+    return <Navigate to={role === "ADMINISTRADOR" ? '/admin/home' : '/'} replace />;
+  }
 
   const onValid = async (formData) => {
+    setApiError(null);
+
     try {
-      const { error } = await singin(formData.username, formData.password);
-
-      if (error) {
-        setErrorMessage(
-          error.frontendErrorMessage || 'Credenciales administrativas inválidas'
-        );
-
-        return;
-      }
-
-      navigate('/admin/home');
-    } catch (error) {
-      if (error?.response?.data?.code) {
-        setErrorMessage(frontendErrorMessage[error?.response?.data?.code]);
-      } else {
-        setErrorMessage('Error al conectar con el servicio administrativo');
-      }
+      await signInAdmin({
+        email: formData.email,
+        password: formData.password,
+      });
+      navigate('/admin/home', { replace: true });
+    } catch (err) {
+      setApiError(
+        parseApiError(err, 'Credenciales administrativas inválidas.')
+      );
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-med-primary-950 px-4 py-8">
-      {/* Brand Header */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-3">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-med-primary-950 px-4 py-8">
+      <div className="mb-8 flex flex-col items-center">
+        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg">
           <svg
-            className="w-8 h-8 text-med-primary-900"
+            className="h-8 w-8 text-med-primary-900"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth="2"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -63,34 +66,38 @@ function AdminLoginPage() {
         </h1>
       </div>
 
-      {/* Main Card */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/10">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl">
         <div className="p-8 sm:p-10">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-med-primary-900">
-              Bienvenido de nuevo
+              Acceso Administrativo
             </h2>
-            <p className="text-xs text-med-text-sub mt-1 leading-relaxed">
-              Por favor, autentíquese para acceder al portal de proveedores.
+            <p className="mt-1 text-xs leading-relaxed text-med-text-sub">
+              Autentíquese con su correo y contraseña institucional para
+              administrar el centro médico.
             </p>
           </div>
 
           <form
             onSubmit={handleSubmit(onValid)}
             className="flex flex-col gap-4"
+            noValidate
           >
-            {/* Correo Electrónico */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-med-text-main">
+              <label
+                htmlFor="admin-email"
+                className="text-xs font-semibold text-med-text-main"
+              >
                 Correo Electrónico
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-med-text-muted">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-med-text-muted">
                   <svg
-                    className="w-4 h-4"
+                    className="h-4 w-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -101,37 +108,45 @@ function AdminLoginPage() {
                   </svg>
                 </span>
                 <input
+                  id="admin-email"
                   type="email"
+                  autoComplete="email"
                   placeholder="admin@medportal.com"
-                  className={`w-full border rounded-lg pl-10 pr-3.5 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${
-                    errors.username
-                      ? 'border-red-400 bg-red-50/20'
-                      : 'border-med-border'
-                  }`}
-                  {...register('username', {
-                    required: 'El correo electrónico es obligatorio',
+                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-3.5 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${errors.email
+                    ? 'border-red-400 bg-red-50/20'
+                    : 'border-med-border'
+                    }`}
+                  {...register('email', {
+                    required: 'El correo electrónico es obligatorio.',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Ingrese un correo electrónico válido.',
+                    },
                   })}
                 />
               </div>
-              {errors.username && (
-                <p className="text-xs text-red-500 font-medium">
-                  {errors.username.message}
+              {errors.email && (
+                <p className="text-xs font-medium text-red-500">
+                  {errors.email.message}
                 </p>
               )}
             </div>
 
-            {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-med-text-main">
+              <label
+                htmlFor="admin-password"
+                className="text-xs font-semibold text-med-text-main"
+              >
                 Contraseña
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-med-text-muted">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-med-text-muted">
                   <svg
-                    className="w-4 h-4"
+                    className="h-4 w-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -142,34 +157,38 @@ function AdminLoginPage() {
                   </svg>
                 </span>
                 <input
+                  id="admin-password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   placeholder="••••••••"
-                  className={`w-full border rounded-lg pl-10 pr-10 py-2.5 text-sm bg-white text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-2 focus:ring-med-primary-600 focus:border-transparent ${
-                    errors.password
-                      ? 'border-red-400 bg-red-50/20'
-                      : 'border-med-border'
-                  }`}
+                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${errors.password
+                    ? 'border-red-400 bg-red-50/20'
+                    : 'border-med-border'
+                    }`}
                   {...register('password', {
-                    required: 'La contraseña es obligatoria',
+                    required: 'La contraseña es obligatoria.',
+                    minLength: {
+                      value: 8,
+                      message:
+                        'La contraseña debe tener al menos 8 caracteres.',
+                    },
                   })}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={
-                    showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                  }
-                  title={
                     showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
                   }
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-med-text-muted hover:text-med-text-main"
                 >
                   {showPassword ? (
                     <svg
-                      className="w-4 h-4"
+                      className="h-4 w-4"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -180,10 +199,11 @@ function AdminLoginPage() {
                     </svg>
                   ) : (
                     <svg
-                      className="w-4 h-4"
+                      className="h-4 w-4"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -202,44 +222,49 @@ function AdminLoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs text-red-500 font-medium">
+                <p className="text-xs font-medium text-red-500">
                   {errors.password.message}
                 </p>
               )}
             </div>
 
-            {/* Botón de Submit */}
-            <button
-              type="submit"
-              className="mt-2 w-full flex items-center justify-center gap-2 bg-med-primary-900 hover:bg-med-primary-800 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition"
-            >
-              <span>Iniciar Sesión</span>
-              <span className="text-sm">→</span>
-            </button>
-
-            <div className="bg-med-primary-50 border border-med-primary-200/60 rounded-lg p-2.5 text-center text-xs text-med-primary-900">
-              <span className="font-semibold">Credenciales de prueba:</span>
-              <br />
-              Email: <code>admin@medportal.com</code> | Clave:{' '}
-              <code>admin123</code>
-            </div>
-
-            {/* Error Message */}
-            {errorMessage && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 text-center">
-                {errorMessage}
+            {apiError && (
+              <div
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-700"
+              >
+                <p className="font-medium">{apiError.message}</p>
+                {apiError.details?.length > 0 && (
+                  <ul className="mt-1 list-disc pl-4">
+                    {apiError.details.map((item, idx) => (
+                      <li key={idx}>
+                        {item.field ? `${item.field}: ` : ''}
+                        {item.issue}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="mt-2 flex w-full items-center justify-center gap-2 py-2.5"
+            >
+              <span>{isSubmitting ? 'Verificando...' : 'Iniciar Sesión'}</span>
+              {!isSubmitting && <span aria-hidden="true">→</span>}
+            </Button>
           </form>
         </div>
 
-        {/* Banner Inferior Informativo */}
-        <div className="bg-med-primary-50 border-t border-med-primary-100 p-4 sm:p-5 flex items-start gap-3">
+        <div className="flex items-start gap-3 border-t border-med-primary-100 bg-med-primary-50 p-4 sm:p-5">
           <svg
-            className="w-5 h-5 text-med-primary-600 shrink-0 mt-0.5"
+            className="mt-0.5 h-5 w-5 shrink-0 text-med-primary-600"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -248,22 +273,20 @@ function AdminLoginPage() {
               d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
             />
           </svg>
-          <p className="text-xs text-med-text-sub leading-relaxed">
-            <strong className="text-med-text-main font-semibold">
+          <p className="text-xs leading-relaxed text-med-text-sub">
+            <strong className="font-semibold text-med-text-main">
               Solo Acceso Seguro:
             </strong>{' '}
             Este sistema es para personal médico autorizado. Los intentos de
-            acceso no autorizados son registrados y monitoreados para su
-            cumplimiento.
+            acceso no autorizados son registrados y monitoreados.
           </p>
         </div>
       </div>
 
-      {/* Switch to Patient Portal */}
       <div className="mt-6 text-center">
         <Link
           to="/login"
-          className="text-xs text-med-primary-200 hover:text-white transition"
+          className="text-xs text-med-primary-200 transition hover:text-white"
         >
           ← Volver al Portal de Pacientes
         </Link>

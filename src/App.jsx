@@ -6,6 +6,7 @@ import {
 import { AuthProvider } from './modules/auth/context/AuthProvider';
 import ProtectedRoute from './modules/auth/components/ProtectedRoute';
 
+
 // Auth Module
 import AdminLoginPage from './modules/auth/pages/AdminLoginPage';
 
@@ -39,7 +40,7 @@ const routes = [
   {
     path: '/',
     element: (
-      <ProtectedRoute redirectTo="/login">
+      <ProtectedRoute redirectTo="/login" allowedRoles={["PACIENTE"]}>
         <PatientLayout />
       </ProtectedRoute>
     ),
@@ -59,7 +60,7 @@ const routes = [
   {
     path: '/admin',
     element: (
-      <ProtectedRoute redirectTo="/admin/login">
+      <ProtectedRoute redirectTo="/admin/login" allowedRoles={["ADMINISTRADOR"]}>
         <DashboardLayout />
       </ProtectedRoute>
     ),
@@ -102,9 +103,9 @@ const routes = [
   },
 ];
 
-function App() {
-  const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes);
 
+function App() {
   return (
     <AuthProvider>
       <RouterProvider router={router} />

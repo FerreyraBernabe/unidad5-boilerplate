@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import useAuth from '../../auth/hook/useAuth';
+import { useAuth } from '../../auth/hooks/useAuth';
 
 function DashboardLayout() {
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
   const navigate = useNavigate();
-  const { singout } = useAuth();
+  const { signOut, user } = useAuth();
+
+  const adminEmail = user?.email || 'Admin User';
+  const adminLabel = adminEmail.includes('@')
+    ? adminEmail.split('@')[0]
+    : adminEmail;
+  const adminInitials = adminLabel.slice(0, 2).toUpperCase();
 
   const handleLogout = () => {
-    singout();
-    navigate('/admin/login');
+    signOut();
+    navigate('/admin/login', { replace: true });
   };
 
   const navItems = [
@@ -162,15 +168,15 @@ function DashboardLayout() {
 
           {/* User Profile Info */}
           <div className="pt-3 border-t border-med-border flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-med-primary-100 text-med-primary-900 flex items-center justify-center font-bold text-xs">
-              AD
+            <div className="w-9 h-9 rounded-full bg-med-primary-100 text-med-primary-900 flex items-center justify-center font-bold text-xs shrink-0">
+              {adminInitials}
             </div>
             <div className="overflow-hidden">
               <p className="text-xs font-semibold text-med-text-main truncate">
-                Admin User
+                {adminLabel}
               </p>
               <p className="text-[11px] text-med-text-muted truncate">
-                Super Administrator
+                {user?.email || 'Administrador'}
               </p>
             </div>
           </div>
