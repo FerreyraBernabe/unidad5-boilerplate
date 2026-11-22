@@ -7,12 +7,25 @@ import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 import AddDoctorModal from '../components/AddDoctorModal';
 import { useDoctors } from '../hooks/useDoctors';
 
+const getInitials = (name = '') => {
+  const fullName = name.trim();
+  if (!fullName) return 'DR';
+
+  console.log(fullName.split(/\s+/));
+  const [nombre, apellido] = fullName.split(/\s+/);
+  return `${nombre[0].toUpperCase()}${apellido[0].toUpperCase()}`;
+};
+{
+  /*MOVER A SHARED DESPUES */
+}
+
 function DoctorsPage() {
   const [activeModal, setActiveModal] = useState(null);
 
   const {
     doctors,
     create,
+    remove,
     total,
     loading,
     error,
@@ -161,7 +174,7 @@ function DoctorsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-med-primary-100 text-med-primary-700 text-xs font-bold flex items-center justify-center shrink-0">
-                            {""}
+                            {getInitials(doc.name)}
                           </div>
                           <div>
                             <p className="font-semibold text-med-primary-900 leading-tight">
@@ -200,7 +213,7 @@ function DoctorsPage() {
                           title="Eliminar doctor"
                           aria-label={`Eliminar doctor ${doc.name}`}
                           className="p-1.5 rounded-lg hover:bg-red-50 text-med-text-muted hover:text-med-danger-text transition"
-                          onClick={() => alert(`Eliminar doctor ${doc.name}`)}
+                          onClick={() => remove({ doctorId: doc.id })}
                         >
                           <svg
                             className="w-4 h-4"

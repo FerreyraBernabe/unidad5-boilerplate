@@ -30,3 +30,8 @@ export async function createDoctor({ name, licenseNumber, specialtyId }) {
 
   return response.data;
 }
+
+export async function deleteDoctor({ doctorId }) {
+  const response = await instance.delete(ENDPOINTS.DOCTOR_BY_ID(doctorId));
+  return response;
+}

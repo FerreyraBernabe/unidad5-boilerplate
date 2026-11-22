@@ -8,32 +8,15 @@ import useMetrics from '../hooks/useMetrics';
 function OverviewPage() {
   const navigate = useNavigate();
   const { totalDoctors, totalSpecialities, totalAppointments } = useMetrics();
-  const previewDoctors = [
-    {
-      id: 1,
-      name: 'Dr. James Wilson',
-      specialty: 'Cardiología',
-      status: 'Activo',
-      statusType: 'active',
-      avatar: '👨‍⚕️',
-    },
-    {
-      id: 2,
-      name: 'Dr. Elena Rodriguez',
-      specialty: 'Neurología',
-      status: 'Activo',
-      statusType: 'active',
-      avatar: '👩‍⚕️',
-    },
-    {
-      id: 3,
-      name: 'Dr. Robert Chen',
-      specialty: 'Pediatría',
-      status: 'De Licencia',
-      statusType: 'leave',
-      avatar: '👨‍⚕️',
-    },
-  ];
+
+  const getInitials = (name = '') => {
+    const fullName = name.trim();
+    if (!fullName) return 'DR';
+
+    console.log(fullName.split(/\s+/));
+    const [nombre, apellido] = fullName.split(/\s+/);
+    return `${nombre[0].toUpperCase()}${apellido[0].toUpperCase()}`;
+  };
 
   const { doctors, total, pageSize } = useDoctors({ initialPageSize: 4 });
 
@@ -222,7 +205,7 @@ function OverviewPage() {
                 >
                   <td className="px-6 py-4 flex items-center gap-3">
                     <span className="w-9 h-9 rounded-full bg-med-primary-100 flex items-center justify-center text-lg">
-                      {doc.avatar}
+                      {getInitials(doc.name)}
                     </span>
                     <span className="font-semibold text-med-primary-900">
                       {doc.name}
