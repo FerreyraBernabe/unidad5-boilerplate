@@ -1,57 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
 import AddSpecialityModal from '../components/AddSpecialityModal';
-import { getSpecialities } from '../services/getSpecialities';
-
+import { useSpecialties } from '../hooks/useSpecialties';
+import TablePagination from '../../shared/components/TablePagination';
 function SpecialtiesPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] =
-    useState(false);
-  const [specialties, setSpecialties] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await getSpecialities();
-        setSpecialties(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (isMounted) {
-          console.log('ups hubo un error');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-
-    return () => {
-      setSpecialties([]);
-      isMounted = false;
-    };
-  }, []);
-  {
-    /*TODO: verificar la dependencia con "searchTerm"
-    y mover a un Hook */
-  }
-
+  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] = useState(false);
+  const {specialties, total, loading, error, searchTerm, setSearchTerm, pageIndex, pageSize, totalPages, goToPage} = useSpecialties({initialPageSize: 10}); 
   const handleOpenNewSpecialityModal = () => setIsNewSpecialityModalOpen(true);
   const handleCloseNewSpecialityModal = () =>
     setIsNewSpecialityModalOpen(false);
-  {
-    /*TODO: reemplazar por un fetch */
-  }
-
-  const filteredSpecialties = specialties.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,7 +94,7 @@ function SpecialtiesPage() {
                     Cargando especialidades...
                   </td>
                 </tr>
-              ) : filteredSpecialties.length === 0 ? (
+              ) : specialties.length === 0 ? (
                 <tr>
                   <td
                     colSpan="4"
@@ -145,7 +104,7 @@ function SpecialtiesPage() {
                   </td>
                 </tr>
               ) : (
-                filteredSpecialties.map((spec) => (
+                specialties.map((spec) => (
                   <tr
                     key={spec.id}
                     className="hover:bg-gray-50/70 transition-colors"
@@ -236,17 +195,13 @@ function SpecialtiesPage() {
         </div>
 
         {/* Paginador normalizado idéntico a Búsqueda y Filtrado de Citas */}
-        <div className="p-4 bg-med-primary-50/50 border-t border-med-border flex items-center justify-between text-xs text-med-text-muted">
-          <span>Mostrando 4 de 32 registros</span>
-          <div className="flex items-center gap-1">
-            <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
-              ‹
-            </button>
-            <button className="px-2.5 py-1 border border-med-border rounded bg-white text-med-text-sub hover:bg-gray-50">
-              ›
-            </button>
-          </div>
-        </div>
+        <TablePagination
+            currentPage={pageIndex}
+            totalPages={totalPages}
+            totalItems={total}
+            pageSize={pageSize}
+            onPageChange={goToPage}
+         />
       </Card>
     </div>
   );
