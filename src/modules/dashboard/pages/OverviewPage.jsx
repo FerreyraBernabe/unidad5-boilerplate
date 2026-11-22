@@ -232,15 +232,15 @@ function OverviewPage() {
                     {doc.specialty.name}
                   </td>
                   <td className="px-6 py-4">
-                    {doc.statusType === 'active' ? (
+                    {doc.availabilityStatus === 'Available' ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
                         <span className="w-1.5 h-1.5 rounded-full bg-med-active-text" />
-                        {doc.specialty.status}
+                        Turnos Disponibles
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-med-leave-bg text-med-leave-text">
                         <span className="w-1.5 h-1.5 rounded-full bg-med-leave-text" />
-                        {doc.specialty.status}
+                        Sin turnos
                       </span>
                     )}
                   </td>
