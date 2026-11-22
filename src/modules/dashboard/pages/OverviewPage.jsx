@@ -1,9 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import Card from '../../shared/components/Card';
 import Button from '../../shared/components/Button';
-
+import { useDoctors } from '../../doctors/hooks/useDoctors';
+import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 function OverviewPage() {
   const navigate = useNavigate();
+
+  const {
+    total: totalDoctors,
+  } = useDoctors({ initialPageSize: 100 });
+  const {
+    total: totalSpecialities,
+  } = useSpecialties({ initialPageSize: 100 });
+
+
 
   const previewDoctors = [
     {
@@ -95,7 +105,7 @@ function OverviewPage() {
               Doctores Activos
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              124
+              {totalDoctors}
             </p>
           </div>
         </Card>
@@ -128,7 +138,7 @@ function OverviewPage() {
               Especialidades Activas
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              32
+              {totalSpecialities}
             </p>
           </div>
         </Card>
@@ -161,7 +171,7 @@ function OverviewPage() {
               Turnos Confirmados Para Hoy
             </span>
             <p className="text-3xl sm:text-4xl font-extrabold text-med-primary-900 mt-1">
-              48
+              FROSONO GAY
             </p>
           </div>
         </Card>
