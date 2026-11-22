@@ -5,12 +5,24 @@ import AddSpecialityModal from '../components/AddSpecialityModal';
 import { useSpecialties } from '../hooks/useSpecialties';
 import TablePagination from '../../shared/components/TablePagination';
 function SpecialtiesPage() {
-  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] = useState(false);
-  const {specialties, total, loading, error, searchTerm, setSearchTerm, pageIndex, pageSize, totalPages, goToPage} = useSpecialties({initialPageSize: 10}); 
+  const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] =
+    useState(false);
+  const {
+    specialties,
+    create,
+    total,
+    loading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    pageIndex,
+    pageSize,
+    totalPages,
+    goToPage,
+  } = useSpecialties({ initialPageSize: 10 });
   const handleOpenNewSpecialityModal = () => setIsNewSpecialityModalOpen(true);
   const handleCloseNewSpecialityModal = () =>
     setIsNewSpecialityModalOpen(false);
-  
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,9 +75,21 @@ function SpecialtiesPage() {
           </Button>
         </div>
         {isNewSpecialityModalOpen && (
-          <AddSpecialityModal onCancel={handleCloseNewSpecialityModal} />
+          <AddSpecialityModal
+            onCancel={handleCloseNewSpecialityModal}
+            onSubmitSpecialty={create}
+          />
         )}
       </div>
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {error.message}
+        </div>
+      )}
 
       {/* Tabla Principal de Especialidades */}
       <Card className="p-0 overflow-hidden border-med-border">
@@ -112,8 +136,8 @@ function SpecialtiesPage() {
                     {/* Nombre con icono en caja celeste */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-med-primary-100 text-med-primary-700 flex items-center justify-center shrink-0">
-                          {spec.icon}
+                        <div className="w-10 h-10 rounded-xl bg-med-primary-100 text-med-primary-700 text-xs font-bold flex items-center justify-center shrink-0">
+                          {""}
                         </div>
                         <span className="font-semibold text-med-primary-900">
                           {spec.name}
@@ -126,15 +150,15 @@ function SpecialtiesPage() {
                       {spec.description}
                     </td>
 
-                    {/* Estado (Active / Inactive) */}
+                    {/* Estado (Activa / Inactiva) */}
                     <td className="px-6 py-4 text-center">
-                      {spec.status === 'Active' ? (
+                      {!spec.deleted ? (
                         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
-                          Active
+                          Activa
                         </span>
                       ) : (
                         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
-                          Inactive
+                          Inactiva
                         </span>
                       )}
                     </td>
@@ -196,12 +220,12 @@ function SpecialtiesPage() {
 
         {/* Paginador normalizado idéntico a Búsqueda y Filtrado de Citas */}
         <TablePagination
-            currentPage={pageIndex}
-            totalPages={totalPages}
-            totalItems={total}
-            pageSize={pageSize}
-            onPageChange={goToPage}
-         />
+          currentPage={pageIndex}
+          totalPages={totalPages}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={goToPage}
+        />
       </Card>
     </div>
   );
