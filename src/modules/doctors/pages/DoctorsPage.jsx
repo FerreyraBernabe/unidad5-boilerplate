@@ -7,15 +7,17 @@ import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 import AddDoctorModal from '../components/AddDoctorModal';
 import { useDoctors } from '../hooks/useDoctors';
 
-const getInitials = (firstName = '', lastName = '') => {
-  const fullName = `${firstName} ${lastName}`.trim();
+const getInitials = (name = '') => {
+  const fullName = name.trim();
   if (!fullName) return 'DR';
 
-  const parts = fullName.split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  console.log(fullName.split(/\s+/));
+  const [nombre, apellido] = fullName.split(/\s+/);
+  return `${nombre[0].toUpperCase()}${apellido[0].toUpperCase()}`;
 };
+{
+  /*MOVER A SHARED DESPUES */
+}
 
 function DoctorsPage() {
   const [activeModal, setActiveModal] = useState(null);
