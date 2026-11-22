@@ -29,3 +29,10 @@ export async function createSpecialty({ name, description }) {
 
   return response.data;
 }
+
+export async function deleteSpecialty({ specialtyId }) {
+  const response = await instance.delete(
+    ENDPOINTS.SPECIALTY_BY_ID(specialtyId)
+  );
+  return response;
+}
