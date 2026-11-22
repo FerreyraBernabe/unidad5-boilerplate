@@ -3,12 +3,19 @@ import { usePagination } from '../../shared/hooks/usePagination';
 import { parseApiError } from '../../shared/api/apiError';
 import { getAppointments } from '../services/getAppointments';
 
-export function useAppointments({ initialPageSize = 10 } = {}) {
+export function useAppointments({
+  initialPageSize = 10,
+  initialFilters = {},
+} = {}) {
   const [appointments, setAppointments] = useState([]);
-  const [date, setDate] = useState(null);
+  const [filters, setFilters] = useState({
+    dni: initialFilters.dni ?? '',
+    specialtyId: initialFilters.specialtyId ?? '',
+    doctorId: initialFilters.doctorId ?? '',
+    date: initialFilters.date ?? '',
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [reloadKey, setReloadKey] = useState(0);
 
   const {
     pageIndex,
@@ -20,6 +27,14 @@ export function useAppointments({ initialPageSize = 10 } = {}) {
     resetPage,
   } = usePagination(initialPageSize);
 
+  const applyFilters = useCallback(
+    (newFilters) => {
+      setFilters((prev) => ({ ...prev, ...newFilters }));
+      resetPage();
+    },
+    [resetPage]
+  );
+
   useEffect(() => {
     let cancelled = false;
 
@@ -29,6 +44,7 @@ export function useAppointments({ initialPageSize = 10 } = {}) {
 
       try {
         const result = await getAppointments({
+          ...filters,
           pageIndex,
           pageSize,
         });
@@ -36,9 +52,8 @@ export function useAppointments({ initialPageSize = 10 } = {}) {
         if (cancelled) {
           return;
         }
-        let items = result.data;
 
-        setAppointments(items);
+        setAppointments(result.data);
         setTotal(result.total);
       } catch (err) {
         if (!cancelled) {
@@ -56,12 +71,17 @@ export function useAppointments({ initialPageSize = 10 } = {}) {
     return () => {
       cancelled = true;
     };
-  }, [pageIndex, pageSize, reloadKey, setTotal]);
+  }, [filters, pageIndex, pageSize, setTotal]);
 
   return {
     appointments,
     total,
     loading,
     error,
+    pageIndex,
+    pageSize,
+    totalPages,
+    goToPage,
+    applyFilters,
   };
 }
