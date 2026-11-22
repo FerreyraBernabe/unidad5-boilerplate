@@ -1,43 +1,110 @@
-import { useEffect, useState, useCallback } from 'react';
-import { getSpecialities } from '../services/getSpecialities';
+import { useCallback, useEffect, useState } from 'react';
+import { usePagination } from '../../shared/hooks/usePagination';
 import { parseApiError } from '../../shared/api/apiError';
+import { createSpecialty, getSpecialties } from '../services/getSpecialties';
 
-export function useSpecialties() {
+export function useSpecialties({ initialPageSize = 10 } = {}) {
   const [specialties, setSpecialties] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTermState] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const fetchSpecialties = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getSpecialities();
-      setSpecialties(Array.isArray(data) ? data : []);
-    } catch (err) {
-      const apiError = parseApiError(err, 'No se pudieron cargar las especialidades.');
-      setError(apiError.message);
-    } finally {
-      setLoading(false);
-    }
+  const {
+    pageIndex,
+    pageSize,
+    total,
+    totalPages,
+    setTotal,
+    goToPage,
+    resetPage,
+  } = usePagination(initialPageSize);
+
+  const setSearchTerm = useCallback(
+    (value) => {
+      setSearchTermState(value);
+      resetPage();
+    },
+    [resetPage]
+  );
+
+  const refetch = useCallback(() => {
+    setReloadKey((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
-    fetchSpecialties();
-  }, [fetchSpecialties]);
+    let cancelled = false;
 
-  const filteredSpecialties = specialties.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    const loadSpecialties = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await getSpecialties({
+          name: searchTerm,
+          pageIndex,
+          pageSize,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const trimmed = searchTerm.trim().toLowerCase();
+        let items = result.data;
+
+        if (trimmed.length > 0 && trimmed.length < 3) {
+          items = result.data.filter(
+            (item) =>
+              item.name?.toLowerCase().includes(trimmed) ||
+              item.description?.toLowerCase().includes(trimmed)
+          );
+        }
+
+        setSpecialties(items);
+        setTotal(
+          trimmed.length > 0 && trimmed.length < 3 ? items.length : result.total
+        );
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            parseApiError(err, 'No se pudieron cargar las especialidades.')
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadSpecialties();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchTerm, pageIndex, pageSize, reloadKey, setTotal]);
+
+  const create = async (payload) => {
+    const created = await createSpecialty(payload);
+
+    refetch();
+
+    return created;
+  };
 
   return {
-    specialties: filteredSpecialties,
-    searchTerm,
-    setSearchTerm,
+    specialties,
+    create,
+    total,
     loading,
     error,
-    refetch: fetchSpecialties,
+    searchTerm,
+    setSearchTerm,
+    pageIndex,
+    pageSize,
+    totalPages,
+    goToPage,
+    refetch,
   };
 }
