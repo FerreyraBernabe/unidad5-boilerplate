@@ -10,6 +10,7 @@ function SpecialtiesPage() {
   const {
     specialties,
     create,
+    remove,
     total,
     loading,
     error,
@@ -191,9 +192,7 @@ function SpecialtiesPage() {
                         <button
                           title="Eliminar especialidad"
                           className="p-1.5 rounded-lg hover:bg-red-50 text-med-text-muted hover:text-med-danger-text transition"
-                          onClick={() =>
-                            alert(`Eliminar especialidad ${spec.name}`)
-                          }
+                          onClick={() => remove({ specialtyId: spec.id })}
                         >
                           <svg
                             className="w-4 h-4"

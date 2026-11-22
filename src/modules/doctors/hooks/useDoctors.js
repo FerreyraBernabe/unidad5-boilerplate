@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePagination } from '../../shared/hooks/usePagination';
 import { parseApiError } from '../../shared/api/apiError';
-import { createDoctor, getDoctors } from '../services/getDoctors';
+import { createDoctor, getDoctors, deleteDoctor } from '../services/getDoctors';
 
 export function useDoctors({ initialPageSize = 10 } = {}) {
   const [doctors, setDoctors] = useState([]);
@@ -93,9 +93,16 @@ export function useDoctors({ initialPageSize = 10 } = {}) {
     return created;
   };
 
+  const remove = async (payload) => {
+    const deleted = await deleteDoctor(payload);
+    refetch();
+    return deleted;
+  };
+
   return {
     doctors,
     create,
+    remove,
     total,
     loading,
     error,

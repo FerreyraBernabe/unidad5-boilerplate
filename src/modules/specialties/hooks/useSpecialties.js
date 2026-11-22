@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePagination } from '../../shared/hooks/usePagination';
 import { parseApiError } from '../../shared/api/apiError';
-import { createSpecialty, getSpecialties } from '../services/getSpecialties';
+import {
+  createSpecialty,
+  getSpecialties,
+  deleteSpecialty,
+} from '../services/getSpecialties';
 
 export function useSpecialties({ initialPageSize = 10 } = {}) {
   const [specialties, setSpecialties] = useState([]);
@@ -93,9 +97,16 @@ export function useSpecialties({ initialPageSize = 10 } = {}) {
     return created;
   };
 
+  const remove = async (payload) => {
+    const removed = await deleteSpecialty(payload);
+    refetch();
+    return removed;
+  };
+
   return {
     specialties,
     create,
+    remove,
     total,
     loading,
     error,
