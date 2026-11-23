@@ -57,6 +57,8 @@ export function useAppointments({
         setTotal(result.total);
       } catch (err) {
         if (!cancelled) {
+          setAppointments([]);
+          setTotal(0);
           setError(parseApiError(err, 'No se pudieron cargar las citas.'));
         }
       } finally {
@@ -78,6 +80,7 @@ export function useAppointments({
     total,
     loading,
     error,
+    filters,
     pageIndex,
     pageSize,
     totalPages,
