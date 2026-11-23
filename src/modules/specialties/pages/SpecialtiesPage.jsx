@@ -1,16 +1,26 @@
 import { useState } from 'react';
-import Card from '../../shared/components/Card';
+import Alert from '../../shared/components/Alert';
 import Button from '../../shared/components/Button';
-import AddSpecialityModal from '../components/AddSpecialityModal';
-import { useSpecialties } from '../hooks/useSpecialties';
+import Card from '../../shared/components/Card';
+import ConfirmModal from '../../shared/components/ConfirmModal';
 import TablePagination from '../../shared/components/TablePagination';
+import { parseApiError } from '../../shared/api/apiError';
+import AddSpecialityModal from '../components/AddSpecialityModal';
 import SpecialtyIcon from '../components/SpecialtyIcon';
+import { useSpecialties } from '../hooks/useSpecialties';
+
 function SpecialtiesPage() {
   const [isNewSpecialityModalOpen, setIsNewSpecialityModalOpen] =
     useState(false);
+  const [editingSpecialty, setEditingSpecialty] = useState(null);
+  const [specialtyToDelete, setSpecialtyToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionError, setActionError] = useState(null);
+
   const {
     specialties,
     create,
+    update,
     remove,
     total,
     loading,
@@ -22,30 +32,46 @@ function SpecialtiesPage() {
     totalPages,
     goToPage,
   } = useSpecialties({ initialPageSize: 10 });
-  const handleOpenNewSpecialityModal = () => setIsNewSpecialityModalOpen(true);
-  const handleCloseNewSpecialityModal = () =>
-    setIsNewSpecialityModalOpen(false);
+
+  const handleConfirmDelete = async () => {
+    if (!specialtyToDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setActionError(null);
+
+    try {
+      await remove({ specialtyId: specialtyToDelete.id });
+      setSpecialtyToDelete(null);
+    } catch (err) {
+      setActionError(
+        parseApiError(err, 'No se pudo eliminar la especialidad seleccionada.')
+      );
+      setSpecialtyToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Cabecera con Título, Buscador y Botón */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-med-text-main">
+          <h1 className="text-2xl font-bold tracking-tight text-med-text-main sm:text-3xl">
             Directorio de Especialidades
           </h1>
-          <p className="text-sm text-med-text-sub mt-1">
+          <p className="mt-1 text-sm text-med-text-sub">
             Administre las categorías médicas, servicios y disponibilidad del
             personal especializado.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Buscador */}
           <div className="relative min-w-[240px] flex-1 sm:flex-initial">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-med-text-muted">
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -63,46 +89,40 @@ function SpecialtiesPage() {
               placeholder="Buscar especialidad..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-med-border rounded-lg text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-1 focus:ring-med-primary-600"
+              className="w-full rounded-lg border border-med-border bg-white py-2 pl-9 pr-3 text-xs text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-1 focus:ring-med-primary-600"
             />
           </div>
 
-          {/* Botón Nueva Especialidad */}
           <Button
-            onClick={handleOpenNewSpecialityModal}
-            className="flex items-center gap-1.5 bg-med-primary-900 hover:bg-med-primary-800 text-white font-medium"
+            onClick={() => setIsNewSpecialityModalOpen(true)}
+            className="flex items-center gap-1.5"
           >
             <span>+</span>
             <span>Nueva Especialidad</span>
           </Button>
         </div>
-        {isNewSpecialityModalOpen && (
-          <AddSpecialityModal
-            onCancel={handleCloseNewSpecialityModal}
-            onSubmitSpecialty={create}
-          />
-        )}
       </div>
 
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {error.message}
-        </div>
+      {error && <Alert variant="error" message={error.message} />}
+
+      {actionError && (
+        <Alert
+          variant="error"
+          message={actionError.message}
+          details={actionError.details}
+          onClose={() => setActionError(null)}
+        />
       )}
 
-      {/* Tabla Principal de Especialidades */}
-      <Card className="p-0 overflow-hidden border-med-border">
-        <div className="p-5 border-b border-med-border">
+      <Card className="overflow-hidden border-med-border p-0">
+        <div className="border-b border-med-border p-5">
           <h2 className="text-base font-bold text-med-primary-900">
             Registros de Especialidades
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub border-b border-med-border">
+            <thead className="border-b border-med-border bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub">
               <tr>
                 <th className="px-6 py-3.5">Nombre de la Especialidad</th>
                 <th className="px-6 py-3.5">Descripción</th>
@@ -133,12 +153,11 @@ function SpecialtiesPage() {
                 specialties.map((spec) => (
                   <tr
                     key={spec.id}
-                    className="hover:bg-gray-50/70 transition-colors"
+                    className="transition-colors hover:bg-gray-50/70"
                   >
-                    {/* Nombre con icono en caja celeste */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-med-primary-100 text-med-primary-700 text-xs font-bold flex items-center justify-center shrink-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-med-primary-100 text-xs font-bold text-med-primary-700">
                           <SpecialtyIcon name={spec.name} />
                         </div>
                         <span className="font-semibold text-med-primary-900">
@@ -147,36 +166,33 @@ function SpecialtiesPage() {
                       </div>
                     </td>
 
-                    {/* Descripción */}
-                    <td className="px-6 py-4 text-med-text-sub max-w-md">
+                    <td className="max-w-md px-6 py-4 text-med-text-sub">
                       {spec.description}
                     </td>
 
-                    {/* Estado (Activa / Inactiva) */}
                     <td className="px-6 py-4 text-center">
-                      {spec.isActive ? (
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
+                      {spec.isActive !== false ? (
+                        <span className="inline-block rounded-full bg-med-active-bg px-3 py-1 text-xs font-semibold text-med-active-text">
                           Activa
                         </span>
                       ) : (
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                        <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
                           Inactiva
                         </span>
                       )}
                     </td>
 
-                    {/* Acciones: Editar y Eliminar */}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 text-med-text-muted">
                         <button
+                          type="button"
                           title="Editar especialidad"
-                          className="p-1.5 rounded-lg hover:bg-med-primary-50 text-med-text-muted hover:text-med-primary-900 transition"
-                          onClick={() =>
-                            alert(`Editar especialidad ${spec.name}`)
-                          }
+                          aria-label={`Editar especialidad ${spec.name}`}
+                          className="rounded-lg p-1.5 text-med-text-muted transition hover:bg-med-primary-50 hover:text-med-primary-900"
+                          onClick={() => setEditingSpecialty(spec)}
                         >
                           <svg
-                            className="w-4 h-4"
+                            className="h-4 w-4"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -191,12 +207,14 @@ function SpecialtiesPage() {
                         </button>
 
                         <button
+                          type="button"
                           title="Eliminar especialidad"
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-med-text-muted hover:text-med-danger-text transition"
-                          onClick={() => remove({ specialtyId: spec.id })}
+                          aria-label={`Eliminar especialidad ${spec.name}`}
+                          className="rounded-lg p-1.5 text-med-text-muted transition hover:bg-red-50 hover:text-med-danger-text"
+                          onClick={() => setSpecialtyToDelete(spec)}
                         >
                           <svg
-                            className="w-4 h-4"
+                            className="h-4 w-4"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -218,7 +236,6 @@ function SpecialtiesPage() {
           </table>
         </div>
 
-        {/* Paginador normalizado idéntico a Búsqueda y Filtrado de Citas */}
         <TablePagination
           currentPage={pageIndex}
           totalPages={totalPages}
@@ -227,6 +244,38 @@ function SpecialtiesPage() {
           onPageChange={goToPage}
         />
       </Card>
+
+      {isNewSpecialityModalOpen && (
+        <AddSpecialityModal
+          onCancel={() => setIsNewSpecialityModalOpen(false)}
+          onSubmitSpecialty={create}
+        />
+      )}
+
+      {editingSpecialty && (
+        <AddSpecialityModal
+          initialSpecialty={editingSpecialty}
+          onCancel={() => setEditingSpecialty(null)}
+          onSubmitSpecialty={(payload) => update(editingSpecialty.id, payload)}
+        />
+      )}
+
+      {specialtyToDelete && (
+        <ConfirmModal
+          title="Eliminar especialidad"
+          confirmLabel="Sí, eliminar"
+          loadingLabel="Eliminando..."
+          isLoading={isDeleting}
+          onCancel={() => setSpecialtyToDelete(null)}
+          onConfirm={handleConfirmDelete}
+        >
+          ¿Seguro que desea eliminar la especialidad{' '}
+          <strong className="text-med-text-main">
+            {specialtyToDelete.name}
+          </strong>
+          ?
+        </ConfirmModal>
+      )}
     </div>
   );
 }

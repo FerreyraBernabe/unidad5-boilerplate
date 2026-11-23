@@ -1,15 +1,11 @@
-import { useState } from 'react';
 export default function AvailabilityTable({
   schedules = [],
   onToggle,
   onTimeChange,
 }) {
   return (
-    <form
-      id="availabilityForm"
-      className="overflow-hidden rounded-xl border border-med-border bg-white shadow-xs"
-    >
-      <div className="overflow-x-auto m-2">
+    <div className="overflow-hidden rounded-xl border border-med-border bg-white shadow-xs">
+      <div className="m-2 overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="border-b border-med-border bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub">
             <tr>
@@ -35,7 +31,7 @@ export default function AvailabilityTable({
                       aria-hidden="true"
                       className="relative h-5 w-9 rounded-full bg-slate-300 transition-colors after:absolute after:start-0.5 after:top-0.5 after:size-4 after:rounded-full after:bg-white after:transition-transform after:content-[''] peer-checked:bg-med-primary-700 peer-checked:after:translate-x-4 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-med-primary-700"
                     />
-                    <span className="select-none ms-3 text-sm font-medium text-heading text-cyan-900">
+                    <span className="ms-3 select-none text-sm font-medium text-cyan-900">
                       {row.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </label>
@@ -67,6 +63,6 @@ export default function AvailabilityTable({
           </tbody>
         </table>
       </div>
-    </form>
+    </div>
   );
 }

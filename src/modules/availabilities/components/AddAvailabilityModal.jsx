@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { getDoctors } from '../../doctors/services/getDoctors';
+import Alert from '../../shared/components/Alert';
+import Button from '../../shared/components/Button';
 import Card from '../../shared/components/Card';
+import Modal from '../../shared/components/Modal';
 import { parseApiError } from '../../shared/api/apiError';
 import { days } from '../constants/days.js';
 import {
@@ -20,29 +25,52 @@ const normalizeDay = (str = '') =>
 
 export default function AddAvailabilityModal({
   onClose,
-  doctors = [],
+  doctors: initialDoctors = [],
   onSaved,
 }) {
+  const [allDoctors, setAllDoctors] = useState(initialDoctors);
   const [selectedDoctorId, setSelectedDoctorId] = useState(
-    () => doctors[0]?.id ?? ''
+    () => initialDoctors[0]?.id ?? ''
   );
   const [schedules, setSchedules] = useState(days);
   const [hasExistingRules, setHasExistingRules] = useState(false);
   const [loadingRules, setLoadingRules] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm();
+
   useEffect(() => {
-    if (!selectedDoctorId && doctors.length > 0) {
-      setSelectedDoctorId(doctors[0].id);
-    }
-  }, [doctors, selectedDoctorId]);
+    let cancelled = false;
+
+    const loadAllDoctors = async () => {
+      try {
+        const result = await getDoctors({ pageIndex: 1, pageSize: 100 });
+
+        if (!cancelled && result.data.length > 0) {
+          setAllDoctors(result.data);
+          setSelectedDoctorId((prev) => prev || result.data[0].id);
+        }
+      } catch {
+        // Si falla la carga completa, se conserva el listado recibido por props.
+      }
+    };
+
+    loadAllDoctors();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedDoctorId) {
       setSchedules(days);
       setHasExistingRules(false);
-      return;
+
+      return undefined;
     }
 
     let cancelled = false;
@@ -54,7 +82,9 @@ export default function AddAvailabilityModal({
       try {
         const existingRules = await getDoctorsAvailabilities(selectedDoctorId);
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         if (existingRules.length > 0) {
           setHasExistingRules(true);
@@ -79,6 +109,7 @@ export default function AddAvailabilityModal({
               salida: d.salida || '16:00',
             };
           });
+
           setSchedules(mapped);
         } else {
           setHasExistingRules(false);
@@ -109,16 +140,18 @@ export default function AddAvailabilityModal({
 
   const handleToggle = (id) => {
     setSchedules((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              activo: !item.activo,
-              entrada: item.entrada || '08:00',
-              salida: item.salida || '16:00',
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item.id !== id) {
+          return item;
+        }
+
+        return {
+          ...item,
+          activo: !item.activo,
+          entrada: item.entrada || '08:00',
+          salida: item.salida || '16:00',
+        };
+      })
     );
   };
 
@@ -128,11 +161,12 @@ export default function AddAvailabilityModal({
     );
   };
 
-  const handleSave = async () => {
+  const onSubmitForm = async () => {
     setError(null);
 
     if (!selectedDoctorId) {
       setError({ message: 'Debe seleccionar un profesional.' });
+
       return;
     }
 
@@ -140,6 +174,7 @@ export default function AddAvailabilityModal({
 
     if (activeDays.length === 0) {
       setError({ message: 'Debe activar al menos un día de atención.' });
+
       return;
     }
 
@@ -148,6 +183,7 @@ export default function AddAvailabilityModal({
         setError({
           message: `Complete el horario de entrada y salida para el día ${dayItem.nombre}.`,
         });
+
         return;
       }
 
@@ -155,6 +191,7 @@ export default function AddAvailabilityModal({
         setError({
           message: `En ${dayItem.nombre}, el horario de entrada (${dayItem.entrada}) debe ser menor al de salida (${dayItem.salida}).`,
         });
+
         return;
       }
     }
@@ -168,8 +205,6 @@ export default function AddAvailabilityModal({
       })),
     };
 
-    setIsSubmitting(true);
-
     try {
       if (hasExistingRules) {
         await updateAvailabilities(payload);
@@ -180,128 +215,103 @@ export default function AddAvailabilityModal({
       if (onSaved) {
         onSaved();
       }
+
       onClose();
     } catch (err) {
       setError(
         parseApiError(err, 'No se pudo guardar la disponibilidad horaria.')
       );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <div
-      onClick={(e) => {
-        if (!isSubmitting && e.target === e.currentTarget && onClose) {
-          onClose();
-        }
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="availability-modal-title"
-        className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-med-bg shadow-xl"
-      >
-        <header className="flex items-start justify-between gap-4 border-b border-med-border-subtle bg-white px-5 py-5 sm:px-7">
-          <div>
-            <h2
-              id="availability-modal-title"
-              className="text-xl font-bold tracking-tight text-med-primary-900 sm:text-2xl"
-            >
-              Gestionar Disponibilidad Horaria
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-med-text-sub">
-              Defina los días y rangos horarios de atención para el profesional
-              seleccionado.
-            </p>
-          </div>
-          <button
+    <Modal
+      titleId="availability-modal-title"
+      title="Gestionar Disponibilidad Horaria"
+      subtitle="Defina los días y rangos horarios de atención para el profesional seleccionado."
+      onClose={onClose}
+      disableClose={isSubmitting}
+      maxWidth="max-w-5xl"
+      footer={
+        <>
+          <Button
             type="button"
+            variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            aria-label="Cerrar modal"
-            className="shrink-0 rounded-lg p-2 text-med-text-muted transition hover:bg-med-primary-50 hover:text-med-primary-900 disabled:opacity-40"
           >
-            ✕
-          </button>
-        </header>
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="availability-form"
+            disabled={isSubmitting || loadingRules}
+          >
+            {isSubmitting ? 'Guardando...' : 'Guardar Disponibilidad'}
+          </Button>
+        </>
+      }
+    >
+      <form
+        id="availability-form"
+        onSubmit={handleSubmit(onSubmitForm)}
+        className="flex flex-col gap-6 lg:flex-row"
+        noValidate
+      >
+        <div className="flex shrink-0 flex-col gap-6 lg:w-72">
+          <Card className="search-card">
+            <SearchDoctorCard
+              doctors={allDoctors}
+              selectedDoctorId={selectedDoctorId}
+              onSelectDoctor={setSelectedDoctorId}
+            />
+          </Card>
+          <Card className="extra-info-card">
+            <ExtraInfoCard />
+          </Card>
+        </div>
 
-        <div className="flex flex-1 flex-col lg:flex-row gap-6 p-6 overflow-y-auto">
-          <div className="flex flex-col gap-6 lg:w-72 shrink-0">
-            <Card className="search-card">
-              <SearchDoctorCard
-                doctors={doctors}
-                selectedDoctorId={selectedDoctorId}
-                onSelectDoctor={setSelectedDoctorId}
-              />
-            </Card>
-            <Card className="extra-info-card">
-              <ExtraInfoCard />
-            </Card>
-          </div>
-
-          <section className="flex-1 bg-white border border-med-border rounded-xl flex flex-col justify-between overflow-hidden">
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-med-border-subtle">
-                <span className="font-bold text-med-primary-900 text-sm">
-                  Configuración de Horarios
+        <section className="flex flex-1 flex-col justify-between overflow-hidden rounded-xl border border-med-border bg-white">
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-med-border-subtle p-4">
+              <span className="text-sm font-bold text-med-primary-900">
+                Configuración de Horarios
+              </span>
+              <div className="flex items-center gap-3">
+                <span className="rounded-2xl bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                  • {hasExistingRules ? 'Editar Horario' : 'Horario Regular'}
                 </span>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs bg-emerald-100 rounded-2xl px-2.5 py-1 text-emerald-700 font-semibold">
-                    • {hasExistingRules ? 'Editar Horario' : 'Horario Regular'}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Intervalos de 30 minutos
-                  </span>
-                </div>
+                <span className="text-xs text-gray-500">
+                  Intervalos de 30 minutos
+                </span>
               </div>
-
-              {error && (
-                <div
-                  role="alert"
-                  className="mx-4 mt-4 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-700"
-                >
-                  <p className="font-medium">{error.message}</p>
-                </div>
-              )}
-
-              {loadingRules ? (
-                <div className="p-8 text-center text-sm text-med-text-muted">
-                  Cargando horarios del profesional...
-                </div>
-              ) : (
-                <AvailabilityTable
-                  schedules={schedules}
-                  onToggle={handleToggle}
-                  onTimeChange={handleTimeChange}
-                />
-              )}
             </div>
 
-            <section className="flex flex-row gap-2.5 justify-end p-4 border-t border-med-border bg-med-primary-50/40">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="border border-med-border rounded-lg bg-white px-4 py-2 text-xs font-semibold text-med-text-main hover:bg-gray-50 disabled:opacity-40 transition"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSubmitting || loadingRules}
-                className="rounded-lg bg-med-primary-900 hover:bg-med-primary-800 text-white px-4 py-2 text-xs font-semibold disabled:opacity-40 transition"
-              >
-                {isSubmitting ? 'Guardando...' : 'Guardar Disponibilidad'}
-              </button>
-            </section>
-          </section>
-        </div>
-      </section>
-    </div>
+            {error && (
+              <div className="mx-4 mt-4">
+                <Alert
+                  variant="error"
+                  message={error.message}
+                  details={error.details}
+                  onClose={() => setError(null)}
+                />
+              </div>
+            )}
+
+            {loadingRules ? (
+              <div className="p-8 text-center text-sm text-med-text-muted">
+                Cargando horarios del profesional...
+              </div>
+            ) : (
+              <AvailabilityTable
+                schedules={schedules}
+                onToggle={handleToggle}
+                onTimeChange={handleTimeChange}
+              />
+            )}
+          </div>
+        </section>
+      </form>
+    </Modal>
   );
 }

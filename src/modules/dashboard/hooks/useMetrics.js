@@ -1,13 +1,14 @@
-import { useDoctors } from '../../doctors/hooks/useDoctors';
-import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 import { useAppointments } from '../../appointments/hooks/useAppointments';
+import { toIsoDate } from '../../patients/helpers/weekCalendar';
+import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 
 export default function useMetrics() {
-  const { total: totalDoctors } = useDoctors({ initialPageSize: 100 });
-  const { total: totalSpecialities } = useSpecialties({ initialPageSize: 100 });
+  const todayIso = toIsoDate(new Date());
+  const { total: totalSpecialities } = useSpecialties({ initialPageSize: 1 });
   const { total: totalAppointments } = useAppointments({
-    initialPageSize: 100,
+    initialPageSize: 1,
+    initialFilters: { date: todayIso },
   });
 
-  return { totalDoctors, totalSpecialities, totalAppointments };
+  return { totalSpecialities, totalAppointments };
 }

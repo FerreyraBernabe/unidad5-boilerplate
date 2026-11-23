@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import Button from '../../shared/components/Button';
+import Modal from '../../shared/components/Modal';
 import { formatDate, formatTime } from '../helpers/appointments';
 import StatusBadge from './StatusBadge';
 
@@ -15,68 +15,46 @@ function Field({ label, children }) {
 }
 
 export default function AppointmentDetailModal({ appointment, onClose }) {
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
+  const status = appointment.appointmentStatus ?? appointment.status;
+  const patientName =
+    appointment.patient?.name ||
+    appointment.patientName ||
+    'Paciente registrado';
+  const patientDni = appointment.patient?.dni ?? appointment.patientDni ?? '-';
+  const doctorName = appointment.doctor?.name ?? appointment.doctorName ?? '-';
+  const specialtyName =
+    appointment.doctor?.specialty?.name ??
+    appointment.specialityName ??
+    'Sin especialidad';
 
   return (
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+    <Modal
+      titleId="appointment-detail-title"
+      title="Detalle de la cita"
+      headerRight={<StatusBadge status={status} />}
+      onClose={onClose}
+      footer={
+        <Button variant="outline" onClick={onClose}>
+          Cerrar
+        </Button>
+      }
     >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="appointment-detail-title"
-        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <h2
-            id="appointment-detail-title"
-            className="text-xl font-bold text-med-primary-900"
-          >
-            Detalle de la cita
-          </h2>
-          <StatusBadge status={appointment.status} />
-        </div>
+      <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Paciente">{patientName}</Field>
+        <Field label="DNI">{patientDni}</Field>
+        <Field label="Doctor">{doctorName}</Field>
+        <Field label="Especialidad">{specialtyName}</Field>
+        <Field label="Fecha">{formatDate(appointment.date)}</Field>
+        <Field label="Hora">{formatTime(appointment.startTime)} HS</Field>
+      </dl>
 
-        <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Paciente">{appointment.patientName}</Field>
-          <Field label="DNI">{appointment.patientDni}</Field>
-          <Field label="Doctor">{appointment.doctorName}</Field>
-          <Field label="Especialidad">{appointment.specialityName}</Field>
-          <Field label="Fecha">{formatDate(appointment.date)}</Field>
-          <Field label="Hora">{formatTime(appointment.startTime)} HS</Field>
-        </dl>
-
-        <div className="mt-4">
-          <Field label="Motivo de la consulta">
-            <p className="whitespace-pre-wrap break-words">
-              {appointment.reason || 'Sin motivo registrado.'}
-            </p>
-          </Field>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <Button variant="outline" onClick={onClose}>
-            Cerrar
-          </Button>
-        </div>
-      </section>
-    </div>
+      <div className="mt-4">
+        <Field label="Motivo de la consulta">
+          <p className="whitespace-pre-wrap break-words">
+            {appointment.reason || 'Sin motivo registrado.'}
+          </p>
+        </Field>
+      </div>
+    </Modal>
   );
 }
