@@ -1,6 +1,8 @@
 import { instance } from '../../shared/api/axiosInstance.js';
 import { ENDPOINTS } from '../../shared/api/endpoints.js';
 
+// GET api/appointments/search?specialtyId&doctorId&dni&date&pageIndex&pageSize
+// Solo se envían los filtros que tienen valor. pageIndex empieza en 1.
 export async function getAppointments({
   dni = '',
   specialtyId = '',
