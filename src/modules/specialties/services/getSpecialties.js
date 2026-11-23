@@ -30,9 +30,19 @@ export async function createSpecialty({ name, description }) {
   return response.data;
 }
 
+export async function updateSpecialty(id, { name, description }) {
+  const response = await instance.put(ENDPOINTS.SPECIALTY_BY_ID(id), {
+    name: name.trim(),
+    description: description.trim(),
+  });
+
+  return response.data;
+}
+
 export async function deleteSpecialty({ specialtyId }) {
   const response = await instance.delete(
     ENDPOINTS.SPECIALTY_BY_ID(specialtyId)
   );
+
   return response;
 }

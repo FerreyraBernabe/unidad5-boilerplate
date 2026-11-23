@@ -3,8 +3,9 @@ import { usePagination } from '../../shared/hooks/usePagination';
 import { parseApiError } from '../../shared/api/apiError';
 import {
   createSpecialty,
-  getSpecialties,
   deleteSpecialty,
+  getSpecialties,
+  updateSpecialty,
 } from '../services/getSpecialties';
 
 export function useSpecialties({ initialPageSize = 10 } = {}) {
@@ -97,15 +98,26 @@ export function useSpecialties({ initialPageSize = 10 } = {}) {
     return created;
   };
 
+  const update = async (id, payload) => {
+    const updated = await updateSpecialty(id, payload);
+
+    refetch();
+
+    return updated;
+  };
+
   const remove = async (payload) => {
     const removed = await deleteSpecialty(payload);
+
     refetch();
+
     return removed;
   };
 
   return {
     specialties,
     create,
+    update,
     remove,
     total,
     loading,

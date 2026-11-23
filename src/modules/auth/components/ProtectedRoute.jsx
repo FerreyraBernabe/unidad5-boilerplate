@@ -1,7 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-
 function ProtectedRoute({ children, redirectTo = '/login', allowedRoles }) {
   const { isAuthenticated, role } = useAuth();
 
@@ -10,8 +9,7 @@ function ProtectedRoute({ children, redirectTo = '/login', allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
-
-    const fallbackHome = role === "ADMINISTRADOR" ? '/admin/home' : '/';
+    const fallbackHome = role === 'ADMINISTRADOR' ? '/admin/home' : '/';
 
     return <Navigate to={fallbackHome} replace />;
   }

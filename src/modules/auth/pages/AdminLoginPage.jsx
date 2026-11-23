@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import Alert from '../../shared/components/Alert';
 import Button from '../../shared/components/Button';
+import Input from '../../shared/components/Input';
 import { parseApiError } from '../../shared/api/apiError';
 import { useAuth } from '../hooks/useAuth';
 
@@ -84,106 +86,69 @@ function AdminLoginPage() {
             className="flex flex-col gap-4"
             noValidate
           >
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="admin-email"
-                className="text-xs font-semibold text-med-text-main"
-              >
-                Correo Electrónico
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-med-text-muted">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  id="admin-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="admin@medportal.com"
-                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-3.5 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${
-                    errors.email
-                      ? 'border-red-400 bg-red-50/20'
-                      : 'border-med-border'
-                  }`}
-                  {...register('email', {
-                    required: 'El correo electrónico es obligatorio.',
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Ingrese un correo electrónico válido.',
-                    },
-                  })}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-xs font-medium text-red-500">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+            <Input
+              id="admin-email"
+              label="Correo Electrónico"
+              type="email"
+              autoComplete="email"
+              placeholder="admin@admin.com"
+              error={errors.email?.message}
+              icon={
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              }
+              {...register('email', {
+                required: 'El correo electrónico es obligatorio.',
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'Ingrese un correo electrónico válido.',
+                },
+              })}
+            />
 
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="admin-password"
-                className="text-xs font-semibold text-med-text-main"
-              >
-                Contraseña
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-med-text-muted">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  id="admin-password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${
-                    errors.password
-                      ? 'border-red-400 bg-red-50/20'
-                      : 'border-med-border'
-                  }`}
-                  {...register('password', {
-                    required: 'La contraseña es obligatoria.',
-                    minLength: {
-                      value: 8,
-                      message:
-                        'La contraseña debe tener al menos 8 caracteres.',
-                    },
-                  })}
-                />
+            <Input
+              id="admin-password"
+              label="Contraseña"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              placeholder="••••••••"
+              error={errors.password?.message}
+              icon={
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              }
+              rightElement={
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={
                     showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
                   }
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-med-text-muted hover:text-med-text-main"
+                  className="text-med-text-muted hover:text-med-text-main"
                 >
                   {showPassword ? (
                     <svg
@@ -223,31 +188,23 @@ function AdminLoginPage() {
                     </svg>
                   )}
                 </button>
-              </div>
-              {errors.password && (
-                <p className="text-xs font-medium text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
+              }
+              {...register('password', {
+                required: 'La contraseña es obligatoria.',
+                minLength: {
+                  value: 8,
+                  message: 'La contraseña debe tener al menos 8 caracteres.',
+                },
+              })}
+            />
 
             {apiError && (
-              <div
-                role="alert"
-                className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-700"
-              >
-                <p className="font-medium">{apiError.message}</p>
-                {apiError.details?.length > 0 && (
-                  <ul className="mt-1 list-disc pl-4">
-                    {apiError.details.map((item, idx) => (
-                      <li key={idx}>
-                        {item.field ? `${item.field}: ` : ''}
-                        {item.issue}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <Alert
+                variant="error"
+                message={apiError.message}
+                details={apiError.details}
+                onClose={() => setApiError(null)}
+              />
             )}
 
             <Button

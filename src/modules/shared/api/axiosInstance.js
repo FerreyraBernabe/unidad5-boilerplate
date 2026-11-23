@@ -1,5 +1,12 @@
 import axios from 'axios';
 
+export const AUTH_STORAGE_KEY = 'sesion';
+
+export function clearStoredSession() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem('token');
+}
+
 const instance = axios.create({
   baseURL: import.meta.env.DEV ? '/' : import.meta.env.VITE_BACKEND_URL,
   withCredentials: false,
@@ -19,22 +26,17 @@ instance.interceptors.request.use(
 );
 
 instance.interceptors.response.use(
-  (config) => {
-    return config;
-  },
-    (error) => {
+  (config) => config,
+  (error) => {
     if (error.response?.status === 401) {
       const path = window.location.pathname;
       const isLoginPage = path === '/login' || path === '/admin/login';
 
       if (!isLoginPage) {
-        if (path.startsWith('/admin')) {
-          localStorage.clear();
-          window.location.href = '/admin/login';
-        } else {
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-        }
+        clearStoredSession();
+        window.location.href = path.startsWith('/admin')
+          ? '/admin/login'
+          : '/login';
       }
     }
 

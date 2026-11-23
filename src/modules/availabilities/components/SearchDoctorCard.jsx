@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { getInitials } from '../../shared/helpers/getInitials';
+
 export default function SearchDoctorCard({
   doctors = [],
   selectedDoctorId,
@@ -19,7 +20,7 @@ export default function SearchDoctorCard({
           id="doctor-select"
           value={selectedDoctorId}
           onChange={(e) => onSelectDoctor(e.target.value)}
-          className="w-full px-3 py-2 text-xs bg-white border border-med-border rounded-lg text-med-text-main focus:outline-none focus:ring-1 focus:ring-med-primary-600"
+          className="w-full rounded-lg border border-med-border bg-white px-3 py-2 text-xs text-med-text-main focus:outline-none focus:ring-1 focus:ring-med-primary-600"
         >
           <option value="">Seleccione un doctor...</option>
           {doctors.map((doc) => (
@@ -30,9 +31,9 @@ export default function SearchDoctorCard({
         </select>
       </div>
       {selectedDoctor && (
-        <section className="flex flex-row items-center bg-sky-100/80 p-3 rounded-lg gap-3">
-          <div className="w-10 h-10 rounded-xl bg-med-primary-700 text-white text-xs font-bold flex items-center justify-center shrink-0">
-            DR
+        <section className="flex flex-row items-center gap-3 rounded-lg bg-sky-100/80 p-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-med-primary-700 text-xs font-bold text-white">
+            {getInitials(selectedDoctor.name)}
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-bold text-med-primary-900">
@@ -41,8 +42,9 @@ export default function SearchDoctorCard({
             <p className="text-xs text-med-text-sub">
               Matrícula: {selectedDoctor.licenseNumber ?? 'S/N'}
             </p>
-            <p className="text-xs text-med-primary-700 font-medium">
-              {selectedDoctor.specialty?.name}
+            <p className="text-xs font-medium text-med-primary-700">
+              {selectedDoctor.specialty?.name ??
+                selectedDoctor.speciality?.name}
             </p>
           </div>
         </section>

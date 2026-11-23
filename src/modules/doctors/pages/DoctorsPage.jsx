@@ -1,30 +1,27 @@
 import { useState } from 'react';
-import Card from '../../shared/components/Card';
+import Alert from '../../shared/components/Alert';
 import Button from '../../shared/components/Button';
+import Card from '../../shared/components/Card';
+import ConfirmModal from '../../shared/components/ConfirmModal';
 import TablePagination from '../../shared/components/TablePagination';
+import { parseApiError } from '../../shared/api/apiError';
+import { getInitials } from '../../shared/helpers/getInitials';
 import AddAvailabilityModal from '../../availabilities/components/AddAvailabilityModal';
 import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 import AddDoctorModal from '../components/AddDoctorModal';
 import { useDoctors } from '../hooks/useDoctors';
 
-const getInitials = (name = '') => {
-  const fullName = name.trim();
-  if (!fullName) return 'DR';
-
-  console.log(fullName.split(/\s+/));
-  const [nombre, apellido] = fullName.split(/\s+/);
-  return `${nombre[0].toUpperCase()}${apellido[0].toUpperCase()}`;
-};
-{
-  /*MOVER A SHARED DESPUES */
-}
-
 function DoctorsPage() {
   const [activeModal, setActiveModal] = useState(null);
+  const [editingDoctor, setEditingDoctor] = useState(null);
+  const [doctorToDelete, setDoctorToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   const {
     doctors,
     create,
+    update,
     remove,
     total,
     loading,
@@ -44,26 +41,45 @@ function DoctorsPage() {
     error: specialtiesError,
   } = useSpecialties({ initialPageSize: 100 });
 
+  const handleConfirmDelete = async () => {
+    if (!doctorToDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setActionError(null);
+
+    try {
+      await remove({ doctorId: doctorToDelete.id });
+      setDoctorToDelete(null);
+    } catch (err) {
+      setActionError(
+        parseApiError(err, 'No se pudo eliminar el doctor seleccionado.')
+      );
+      setDoctorToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Cabecera con Título, Buscador y Acciones */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-med-text-main">
+          <h1 className="text-2xl font-bold tracking-tight text-med-text-main sm:text-3xl">
             Directorio de Doctores
           </h1>
-          <p className="text-sm text-med-text-sub mt-1">
+          <p className="mt-1 text-sm text-med-text-sub">
             Gestione el personal médico, especialidades asignadas y
             disponibilidad horaria.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Buscador */}
           <div className="relative min-w-[240px] flex-1 sm:flex-initial">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-med-text-muted">
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -81,16 +97,16 @@ function DoctorsPage() {
               placeholder="Buscar doctor por nombre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-med-border rounded-lg text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-1 focus:ring-med-primary-600"
+              className="w-full rounded-lg border border-med-border bg-white py-2 pl-9 pr-3 text-xs text-med-text-main placeholder-med-text-muted focus:outline-none focus:ring-1 focus:ring-med-primary-600"
             />
           </div>
 
           <Button
             onClick={() => setActiveModal('availability')}
-            className="flex items-center gap-2 bg-med-primary-900 hover:bg-med-primary-800 text-white"
+            className="flex items-center gap-2 bg-med-primary-900 text-white hover:bg-med-primary-800"
           >
             <svg
-              className="w-4 h-4"
+              className="h-4 w-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -107,7 +123,7 @@ function DoctorsPage() {
 
           <Button
             onClick={() => setActiveModal('create')}
-            className="flex items-center gap-1.5 bg-med-primary-700 hover:bg-med-primary-800 text-white font-medium"
+            className="flex items-center gap-1.5 bg-med-primary-700 font-medium text-white hover:bg-med-primary-800"
           >
             <span>+</span>
             <span>Nuevo Doctor</span>
@@ -115,25 +131,26 @@ function DoctorsPage() {
         </div>
       </div>
 
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {error.message}
-        </div>
+      {error && <Alert variant="error" message={error.message} />}
+
+      {actionError && (
+        <Alert
+          variant="error"
+          message={actionError.message}
+          details={actionError.details}
+          onClose={() => setActionError(null)}
+        />
       )}
 
-      {/* Tabla Principal de Doctores */}
-      <Card className="p-0 overflow-hidden border-med-border">
-        <div className="p-5 border-b border-med-border">
+      <Card className="overflow-hidden border-med-border p-0">
+        <div className="border-b border-med-border p-5">
           <h2 className="text-base font-bold text-med-primary-900">
             Registros de Doctores
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub border-b border-med-border">
+            <thead className="border-b border-med-border bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub">
               <tr>
                 <th className="px-6 py-3.5">Nombre del Doctor</th>
                 <th className="px-6 py-3.5">Especialidad</th>
@@ -170,19 +187,19 @@ function DoctorsPage() {
                   return (
                     <tr
                       key={doc.id}
-                      className="hover:bg-gray-50/70 transition-colors"
+                      className="transition-colors hover:bg-gray-50/70"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-med-primary-100 text-med-primary-700 text-xs font-bold flex items-center justify-center shrink-0">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-med-primary-100 text-xs font-bold text-med-primary-700">
                             {getInitials(doc.name)}
                           </div>
                           <div>
-                            <p className="font-semibold text-med-primary-900 leading-tight">
+                            <p className="font-semibold leading-tight text-med-primary-900">
                               {doc.name}
                             </p>
                             {doc.licenseNumber && (
-                              <p className="text-xs text-med-text-muted mt-0.5">
+                              <p className="mt-0.5 text-xs text-med-text-muted">
                                 Matrícula: {doc.licenseNumber}
                               </p>
                             )}
@@ -191,45 +208,69 @@ function DoctorsPage() {
                       </td>
 
                       <td className="px-6 py-4">
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-med-primary-100 text-med-primary-700">
+                        <span className="inline-block rounded-full bg-med-primary-100 px-3 py-1 text-xs font-semibold text-med-primary-700">
                           {specialtyName}
                         </span>
                       </td>
 
                       <td className="px-6 py-4 text-center">
                         {!doc.deleted ? (
-                          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-med-active-bg text-med-active-text">
+                          <span className="inline-block rounded-full bg-med-active-bg px-3 py-1 text-xs font-semibold text-med-active-text">
                             Activo
                           </span>
                         ) : (
-                          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                          <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
                             Inactivo
                           </span>
                         )}
                       </td>
 
                       <td className="px-6 py-4 text-right">
-                        <button
-                          type="button"
-                          title="Eliminar doctor"
-                          aria-label={`Eliminar doctor ${doc.name}`}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-med-text-muted hover:text-med-danger-text transition"
-                          onClick={() => remove({ doctorId: doc.id })}
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                        <div className="flex items-center justify-end gap-2 text-med-text-muted">
+                          <button
+                            type="button"
+                            title="Editar doctor"
+                            aria-label={`Editar doctor ${doc.name}`}
+                            className="rounded-lg p-1.5 text-med-text-muted transition hover:bg-med-primary-50 hover:text-med-primary-900"
+                            onClick={() => setEditingDoctor(doc)}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                              />
+                            </svg>
+                          </button>
+
+                          <button
+                            type="button"
+                            title="Eliminar doctor"
+                            aria-label={`Eliminar doctor ${doc.name}`}
+                            className="rounded-lg p-1.5 text-med-text-muted transition hover:bg-red-50 hover:text-med-danger-text"
+                            onClick={() => setDoctorToDelete(doc)}
+                          >
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -258,12 +299,37 @@ function DoctorsPage() {
         />
       )}
 
+      {editingDoctor && (
+        <AddDoctorModal
+          initialDoctor={editingDoctor}
+          onCancel={() => setEditingDoctor(null)}
+          onSubmitDoctor={(payload) => update(editingDoctor.id, payload)}
+          specialties={specialties}
+          loadingSpecialties={loadingSpecialties}
+          specialtiesError={specialtiesError}
+        />
+      )}
+
       {activeModal === 'availability' && (
         <AddAvailabilityModal
           onClose={() => setActiveModal(null)}
           doctors={doctors}
           onSaved={refetch}
         />
+      )}
+
+      {doctorToDelete && (
+        <ConfirmModal
+          title="Eliminar doctor"
+          confirmLabel="Sí, eliminar"
+          loadingLabel="Eliminando..."
+          isLoading={isDeleting}
+          onCancel={() => setDoctorToDelete(null)}
+          onConfirm={handleConfirmDelete}
+        >
+          ¿Seguro que desea dar de baja al profesional{' '}
+          <strong className="text-med-text-main">{doctorToDelete.name}</strong>?
+        </ConfirmModal>
       )}
     </div>
   );

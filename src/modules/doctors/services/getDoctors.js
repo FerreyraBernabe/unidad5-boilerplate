@@ -36,6 +36,16 @@ export async function createDoctor({ name, licenseNumber, specialtyId }) {
   return response.data;
 }
 
+export async function updateDoctor(id, { name, licenseNumber, specialtyId }) {
+  const response = await instance.put(ENDPOINTS.DOCTOR_BY_ID(id), {
+    name: name.trim(),
+    licenseNumber: licenseNumber.trim(),
+    specialtyId: String(specialtyId).trim(),
+  });
+
+  return response.data;
+}
+
 export async function deleteDoctor({ doctorId }) {
   const response = await instance.delete(ENDPOINTS.DOCTOR_BY_ID(doctorId));
 

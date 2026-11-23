@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import Card from '../../shared/components/Card';
+import Alert from '../../shared/components/Alert';
 import Button from '../../shared/components/Button';
+import Card from '../../shared/components/Card';
 import TablePagination from '../../shared/components/TablePagination';
-import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 import { useDoctors } from '../../doctors/hooks/useDoctors';
-import { useAppointments } from '../hooks/useAppointments';
-import { formatDate, formatTime } from '../helpers/appointments';
-import AppointmentFilters from '../components/AppointmentFilters';
+import SpecialtyIcon from '../../specialties/components/SpecialtyIcon';
+import { useSpecialties } from '../../specialties/hooks/useSpecialties';
 import AppointmentDetailModal from '../components/AppointmentDetailModal';
+import AppointmentFilters from '../components/AppointmentFilters';
 import StatusBadge from '../components/StatusBadge';
+import { formatDate, formatTime } from '../helpers/appointments';
+import { useAppointments } from '../hooks/useAppointments';
 
 function AppointmentsSearchPage() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -29,7 +31,6 @@ function AppointmentsSearchPage() {
     applyFilters,
   } = useAppointments({ initialPageSize: 10 });
 
-  // Chips de los filtros que están aplicados en este momento.
   const activeFilters = [
     filters.dni && { key: 'dni', label: `DNI: ${filters.dni}` },
     filters.specialtyId && {
@@ -57,16 +58,16 @@ function AppointmentsSearchPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-med-text-main">
+        <h1 className="text-2xl font-bold tracking-tight text-med-text-main sm:text-3xl">
           Búsqueda y Filtrado de Citas
         </h1>
-        <p className="text-sm text-med-text-sub mt-1">
+        <p className="mt-1 text-sm text-med-text-sub">
           Combine los filtros que necesite para encontrar turnos.
         </p>
       </div>
 
       <Card className="p-6">
-        <div className="pb-4 border-b border-med-border-subtle">
+        <div className="border-b border-med-border-subtle pb-4">
           <h2 className="text-base font-bold text-med-primary-900">
             Criterios de Búsqueda
           </h2>
@@ -80,14 +81,14 @@ function AppointmentsSearchPage() {
         />
 
         {activeFilters.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-med-border-subtle">
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-med-border-subtle pt-3">
             <span className="text-xs text-med-text-muted">
               Filtros activos:
             </span>
             {activeFilters.map((item) => (
               <span
                 key={item.key}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100/70 text-sky-800"
+                className="inline-flex items-center gap-1.5 rounded-full bg-sky-100/70 px-3 py-1 text-xs font-medium text-sky-800"
               >
                 {item.label}
                 <button
@@ -104,32 +105,30 @@ function AppointmentsSearchPage() {
         )}
       </Card>
 
-      <Card className="p-0 overflow-hidden border-med-border">
-        <div className="p-5 border-b border-med-border">
+      <Card className="overflow-hidden border-med-border p-0">
+        <div className="border-b border-med-border p-5">
           <h2 className="text-base font-bold text-med-primary-900">
             Registros de Citas
           </h2>
         </div>
 
         {error && (
-          <div
-            role="alert"
-            className="m-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
-            {error.message}
-            <Button
-              variant="outline"
-              className="ml-3 text-xs"
-              onClick={() => applyFilters({})}
-            >
-              Reintentar
-            </Button>
+          <div className="m-5">
+            <Alert variant="error" message={error.message}>
+              <Button
+                variant="outline"
+                className="mt-2 text-xs"
+                onClick={() => applyFilters({})}
+              >
+                Reintentar
+              </Button>
+            </Alert>
           </div>
         )}
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub border-b border-med-border">
+            <thead className="border-b border-med-border bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub">
               <tr>
                 <th className="px-6 py-3.5">Fecha</th>
                 <th className="px-6 py-3.5">Especialidad</th>
@@ -162,53 +161,77 @@ function AppointmentsSearchPage() {
               )}
 
               {!loading &&
-                appointments.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50/70 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-med-primary-900 text-sm">
-                        {formatDate(item.date)}
-                      </p>
-                      <p className="text-xs text-med-text-muted mt-0.5">
-                        {formatTime(item.startTime)} HS
-                      </p>
-                    </td>
+                appointments.map((item) => {
+                  const id = item.appointmentId ?? item.id;
+                  const specialtyName =
+                    item.doctor?.specialty?.name ??
+                    item.specialityName ??
+                    'Sin especialidad';
+                  const doctorName =
+                    item.doctor?.name ?? item.doctorName ?? '-';
+                  const patientName =
+                    item.patient?.name ||
+                    item.patientName ||
+                    'Paciente registrado';
+                  const patientDni =
+                    item.patient?.dni ?? item.patientDni ?? '-';
+                  const status = item.appointmentStatus ?? item.status;
 
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-med-primary-900">
-                        {item.doctor.specialty.name}
-                      </p>
-                      <p className="text-xs text-med-text-muted">
-                        {item.doctor.name}
-                      </p>
-                    </td>
+                  return (
+                    <tr
+                      key={id}
+                      className="transition-colors hover:bg-gray-50/70"
+                    >
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-med-primary-900">
+                          {formatDate(item.date)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-med-text-muted">
+                          {formatTime(item.startTime)} HS
+                        </p>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-med-text-main">
-                        {item.patientName}
-                      </p>
-                      <p className="text-xs text-med-text-muted mt-0.5">
-                        DNI: {item.patient.dni}
-                      </p>
-                    </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-med-primary-100 text-med-primary-700">
+                            <SpecialtyIcon name={specialtyName} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-med-primary-900">
+                              {specialtyName}
+                            </p>
+                            <p className="text-xs text-med-text-muted">
+                              {doctorName}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
 
-                    <td className="px-6 py-4 text-center">
-                      <StatusBadge status={item.appointmentStatus} />
-                    </td>
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-med-text-main">
+                          {patientName}
+                        </p>
+                        <p className="mt-0.5 text-xs text-med-text-muted">
+                          DNI: {patientDni}
+                        </p>
+                      </td>
 
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedAppointment(item)}
-                        className="text-xs font-semibold text-med-primary-700 hover:text-med-primary-900 transition hover:underline"
-                      >
-                        Ver Detalle
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="px-6 py-4 text-center">
+                        <StatusBadge status={status} />
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <Button
+                          variant="ghost"
+                          onClick={() => setSelectedAppointment(item)}
+                          className="px-2.5 py-1 text-xs font-semibold text-med-primary-700 hover:text-med-primary-900"
+                        >
+                          Ver Detalle
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
