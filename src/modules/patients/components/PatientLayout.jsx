@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
+import Button from '../../shared/components/Button';
 
 function PatientLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,22 +18,21 @@ function PatientLayout() {
   };
 
   const getNavLinkClass = ({ isActive }) =>
-    `px-3.5 py-2 rounded-lg text-sm font-semibold transition ${isActive
-      ? 'bg-med-primary-900 text-white'
-      : 'text-med-text-sub hover:bg-med-primary-50 hover:text-med-primary-900'
+    `px-3.5 py-2 rounded-lg text-sm font-semibold transition ${
+      isActive
+        ? 'bg-med-primary-900 text-white'
+        : 'text-med-text-sub hover:bg-med-primary-50 hover:text-med-primary-900'
     }`;
 
   return (
-    <div className="min-h-screen bg-med-bg flex flex-col">
-      {/* Header Responsivo */}
-      <header className="bg-white shadow-xs border-b border-med-border sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          {/* Logo y Enlaces Desktop */}
+    <div className="flex min-h-screen flex-col bg-med-bg">
+      <header className="sticky top-0 z-30 border-b border-med-border bg-white shadow-xs">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-6 sm:gap-8">
             <NavLink to="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-med-primary-900 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-med-primary-900 text-xs font-bold text-white shadow-xs">
                 <svg
-                  className="w-4 h-4"
+                  className="h-4 w-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -45,13 +45,12 @@ function PatientLayout() {
                   />
                 </svg>
               </div>
-              <span className="text-lg font-bold text-med-primary-900 tracking-tight">
+              <span className="text-lg font-bold tracking-tight text-med-primary-900">
                 Portal Salud
               </span>
             </NavLink>
 
-            {/* Enlaces de Navegación Desktop */}
-            <nav className="hidden md:flex items-center gap-2">
+            <nav className="hidden items-center gap-2 md:flex">
               <NavLink to="/" end className={getNavLinkClass}>
                 Reservar Turno
               </NavLink>
@@ -61,55 +60,33 @@ function PatientLayout() {
             </nav>
           </div>
 
-          {/* Acciones Derecha Desktop / Mobile Avatar */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Iconos sutiles como en el mock */}
-            <button
-              type="button"
-              title="Notificaciones"
-              onClick={() => alert('No tienes notificaciones pendientes')}
-              className="hidden sm:flex p-2 rounded-lg text-med-text-muted hover:text-med-primary-900 hover:bg-gray-50 transition"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-            </button>
-
-            {/* Avatar Paciente */}
             <div className="flex items-center gap-2.5 pl-2 sm:border-l sm:border-med-border">
-              <div className="w-8 h-8 rounded-full bg-med-primary-100 text-med-primary-900 font-bold text-xs flex items-center justify-center border border-med-primary-200">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-med-primary-200 bg-med-primary-100 text-xs font-bold text-med-primary-900">
                 {initials}
               </div>
-              <span className="hidden sm:inline-block text-xs font-semibold text-med-text-main">
+              <span className="hidden text-xs font-semibold text-med-text-main sm:inline-block">
                 {displayName}
               </span>
             </div>
 
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleLogout}
-              className="hidden sm:inline-flex text-xs font-semibold text-med-text-sub hover:text-red-600 px-2.5 py-1.5 rounded-lg border border-med-border hover:bg-red-50/40 transition"
+              className="hidden px-2.5 py-1.5 text-xs font-semibold text-med-text-sub hover:bg-red-50/40 hover:text-red-600 sm:inline-flex"
             >
               Salir
-            </button>
+            </Button>
 
-            {/* Botón hamburguesa móvil */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 rounded-lg border border-med-border text-med-text-sub hover:bg-gray-50"
+              aria-label="Abrir menú"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="rounded-lg border border-med-border p-1.5 text-med-text-sub hover:bg-gray-50 md:hidden"
             >
               <svg
-                className="w-5 h-5"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -125,17 +102,17 @@ function PatientLayout() {
           </div>
         </div>
 
-        {/* Desplegable móvil */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-med-border px-4 py-3 bg-white space-y-2">
+          <div className="space-y-2 border-t border-med-border bg-white px-4 py-3 md:hidden">
             <NavLink
               to="/"
               end
               onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg text-sm font-semibold transition ${isActive
-                  ? 'bg-med-primary-900 text-white'
-                  : 'text-med-text-sub hover:bg-med-primary-50'
+                `block rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  isActive
+                    ? 'bg-med-primary-900 text-white'
+                    : 'text-med-text-sub hover:bg-med-primary-50'
                 }`
               }
             >
@@ -145,19 +122,21 @@ function PatientLayout() {
               to="/appointments"
               onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg text-sm font-semibold transition ${isActive
-                  ? 'bg-med-primary-900 text-white'
-                  : 'text-med-text-sub hover:bg-med-primary-50'
+                `block rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  isActive
+                    ? 'bg-med-primary-900 text-white'
+                    : 'text-med-text-sub hover:bg-med-primary-50'
                 }`
               }
             >
               Mis Turnos
             </NavLink>
-            <div className="pt-2 border-t border-med-border-subtle flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-med-border-subtle pt-2">
               <span className="text-xs font-medium text-med-text-sub">
                 Paciente: {displayName}
               </span>
               <button
+                type="button"
                 onClick={handleLogout}
                 className="text-xs font-bold text-red-600"
               >
@@ -168,8 +147,7 @@ function PatientLayout() {
         )}
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8">
         <Outlet />
       </main>
     </div>
