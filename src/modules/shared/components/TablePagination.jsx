@@ -11,9 +11,11 @@ function TablePagination({
   return (
     <div className="p-4 bg-med-primary-50/50 border-t border-med-border flex items-center justify-between text-xs text-med-text-muted">
       <span>
-        {totalItems === 0 ? 'Sin registros para mostrar' : `Mostrando ${from} a ${to} de ${totalItems} registros`}
+        {totalItems === 0
+          ? 'Sin registros para mostrar'
+          : `Mostrando ${from} a ${to} de ${totalItems} registros`}
       </span>
-      
+
       <div className="flex items-center gap-1">
         <button
           type="button"

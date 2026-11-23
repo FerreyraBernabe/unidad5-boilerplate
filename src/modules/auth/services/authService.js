@@ -8,7 +8,7 @@ export async function loginAdmin({ email, password }) {
   });
 
   const token = response.data?.token;
-  const role = response.data?.role.toUpperCase();
+  const role = response.data?.role?.toUpperCase() ?? null;
 
   return {
     token,
@@ -19,18 +19,19 @@ export async function loginAdmin({ email, password }) {
 }
 
 export async function loginPatient({ email, dni }) {
-
+  const trimmedDni = String(dni).trim();
   const response = await instance.post(ENDPOINTS.AUTH_PATIENT_LOGIN, {
     email: email.trim(),
-    dni: Number(dni.trim()),
+    dni: Number(trimmedDni),
   });
 
   const token = response.data?.token;
-  const role = response.data?.role.toUpperCase();
+  const role = response.data?.role?.toUpperCase() ?? null;
+
   return {
     token,
     role,
     email: email.trim(),
-    dni: Number(dni.trim()),
+    dni: Number(trimmedDni),
   };
 }
