@@ -178,10 +178,10 @@ function AppointmentsSearchPage() {
 
                     <td className="px-6 py-4">
                       <p className="font-semibold text-med-primary-900">
-                        {item.specialityName}
+                        {item.doctor.specialty.name}
                       </p>
                       <p className="text-xs text-med-text-muted">
-                        {item.doctorName}
+                        {item.doctor.name}
                       </p>
                     </td>
 
@@ -190,12 +190,12 @@ function AppointmentsSearchPage() {
                         {item.patientName}
                       </p>
                       <p className="text-xs text-med-text-muted mt-0.5">
-                        DNI: {item.patientDni}
+                        DNI: {item.patient.dni}
                       </p>
                     </td>
 
                     <td className="px-6 py-4 text-center">
-                      <StatusBadge status={item.status} />
+                      <StatusBadge status={item.appointmentStatus} />
                     </td>
 
                     <td className="px-6 py-4 text-right">
