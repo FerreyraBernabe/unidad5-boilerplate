@@ -35,6 +35,7 @@ function DoctorsPage() {
     pageSize,
     totalPages,
     goToPage,
+    refetch,
   } = useDoctors({ initialPageSize: 10 });
 
   const {
@@ -258,7 +259,11 @@ function DoctorsPage() {
       )}
 
       {activeModal === 'availability' && (
-        <AddAvailabilityModal onClose={() => setActiveModal(null)} />
+        <AddAvailabilityModal
+          onClose={() => setActiveModal(null)}
+          doctors={doctors}
+          onSaved={refetch}
+        />
       )}
     </div>
   );

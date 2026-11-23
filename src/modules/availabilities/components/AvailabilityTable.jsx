@@ -1,29 +1,15 @@
 import { useState } from 'react';
 export default function AvailabilityTable({
-  initialData = days,
-  onSave,
-  onCancel,
+  schedules = [],
+  onToggle,
+  onTimeChange,
 }) {
-  const [schedules, setSchedules] = useState(initialData);
-  const handleToggle = (id) => {
-    setSchedules((prev) => {
-      return prev.map((item) =>
-        item.id === id ? { ...item, activo: !item.activo } : item
-      );
-    });
-  };
-
-  const handleTimeChange = (id, field, value) => {
-    setSchedules((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
-  };
   return (
     <form
       id="availabilityForm"
       className="overflow-hidden rounded-xl border border-med-border bg-white shadow-xs"
     >
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto m-2">
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="border-b border-med-border bg-med-primary-50/70 text-[11px] uppercase tracking-wider text-med-text-sub">
             <tr>
@@ -43,7 +29,7 @@ export default function AvailabilityTable({
                       type="checkbox"
                       className="peer sr-only"
                       checked={row.activo}
-                      onChange={() => handleToggle(row.id)}
+                      onChange={() => onToggle(row.id)}
                     />
                     <span
                       aria-hidden="true"
@@ -61,7 +47,7 @@ export default function AvailabilityTable({
                     value={row.activo ? row.entrada : ''}
                     disabled={!row.activo}
                     onChange={(e) =>
-                      handleTimeChange(row.id, 'entrada', e.target.value)
+                      onTimeChange(row.id, 'entrada', e.target.value)
                     }
                   />
                 </td>
@@ -72,7 +58,7 @@ export default function AvailabilityTable({
                     value={row.activo ? row.salida : ''}
                     disabled={!row.activo}
                     onChange={(e) =>
-                      handleTimeChange(row.id, 'salida', e.target.value)
+                      onTimeChange(row.id, 'salida', e.target.value)
                     }
                   />
                 </td>

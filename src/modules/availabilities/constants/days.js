@@ -34,5 +34,18 @@ export const days = [
     entrada: '08:00',
     salida: '14:00',
   },
-  { id: 'sabado', nombre: 'Sábado', activo: false, entrada: '', salida: '' },
+  {
+    id: 'sabado',
+    nombre: 'Sábado',
+    activo: false,
+    entrada: '08:00',
+    salida: '12:00',
+  },
+  {
+    id: 'domingo',
+    nombre: 'Domingo',
+    activo: false,
+    entrada: '08:00',
+    salida: '12:00',
+  },
 ];
