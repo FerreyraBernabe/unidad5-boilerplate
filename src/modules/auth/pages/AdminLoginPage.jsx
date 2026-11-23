@@ -5,7 +5,6 @@ import Button from '../../shared/components/Button';
 import { parseApiError } from '../../shared/api/apiError';
 import { useAuth } from '../hooks/useAuth';
 
-
 function AdminLoginPage() {
   const [apiError, setApiError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +22,9 @@ function AdminLoginPage() {
   });
 
   if (isAuthenticated) {
-    return <Navigate to={role === "ADMINISTRADOR" ? '/admin/home' : '/'} replace />;
+    return (
+      <Navigate to={role === 'ADMINISTRADOR' ? '/admin/home' : '/'} replace />
+    );
   }
 
   const onValid = async (formData) => {
@@ -112,10 +113,11 @@ function AdminLoginPage() {
                   type="email"
                   autoComplete="email"
                   placeholder="admin@medportal.com"
-                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-3.5 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${errors.email
-                    ? 'border-red-400 bg-red-50/20'
-                    : 'border-med-border'
-                    }`}
+                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-3.5 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${
+                    errors.email
+                      ? 'border-red-400 bg-red-50/20'
+                      : 'border-med-border'
+                  }`}
                   {...register('email', {
                     required: 'El correo electrónico es obligatorio.',
                     pattern: {
@@ -161,10 +163,11 @@ function AdminLoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${errors.password
-                    ? 'border-red-400 bg-red-50/20'
-                    : 'border-med-border'
-                    }`}
+                  className={`w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-med-text-main placeholder-med-text-muted focus:border-transparent focus:outline-none focus:ring-2 focus:ring-med-primary-600 ${
+                    errors.password
+                      ? 'border-red-400 bg-red-50/20'
+                      : 'border-med-border'
+                  }`}
                   {...register('password', {
                     required: 'La contraseña es obligatoria.',
                     minLength: {

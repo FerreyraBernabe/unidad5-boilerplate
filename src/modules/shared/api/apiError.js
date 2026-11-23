@@ -49,7 +49,8 @@ export function parseApiError(
     return {
       status: null,
       errorCode: 'NETWORK_ERROR',
-      message: 'No se pudo conectar con el servidor. Verificá que el backend esté en ejecución.',
+      message:
+        'No se pudo conectar con el servidor. Verificá que el backend esté en ejecución.',
       details: [],
     };
   }

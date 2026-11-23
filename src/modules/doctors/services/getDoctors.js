@@ -3,6 +3,7 @@ import { ENDPOINTS } from '../../shared/api/endpoints.js';
 
 export async function getDoctors({
   name = '',
+  specialtyId = '',
   pageIndex = 1,
   pageSize = 10,
 } = {}) {
@@ -11,6 +12,10 @@ export async function getDoctors({
 
   if (trimmedName.length >= 3) {
     params.name = trimmedName;
+  }
+
+  if (specialtyId) {
+    params.specialtyId = specialtyId;
   }
 
   const response = await instance.get(ENDPOINTS.DOCTORS, { params });
@@ -33,5 +38,6 @@ export async function createDoctor({ name, licenseNumber, specialtyId }) {
 
 export async function deleteDoctor({ doctorId }) {
   const response = await instance.delete(ENDPOINTS.DOCTOR_BY_ID(doctorId));
+
   return response;
 }
